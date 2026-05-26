@@ -2,6 +2,7 @@ import { auroraRequest } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export interface AiConfig {
+  id: string;
   name: string;
   displayName: string;
   description: string | null;
@@ -15,6 +16,9 @@ export interface AiConfig {
   embeddingProvider: string;
   canLearnFromUsers: boolean;
   canAccessOtherAIs: boolean;
+  canDelegateToOtherAIs: boolean;
+  availableForDelegation: boolean;
+  canShareEmbeddings: boolean;
   promptShieldEnabled: boolean;
   handoffEnabled: boolean;
   isActive: boolean;
@@ -22,43 +26,44 @@ export interface AiConfig {
   updatedAt: string;
 }
 
-interface BackendResponse {
-  ai: AiConfig;
-}
-
 export const GET_AI_CONFIG_TOOL = {
   name: "get_ai_config",
   title: "Get Aurora AI configuration",
   description:
-    "Returns the full configuration of an Aurora AI by `name`: " +
-    "displayName, description, provider/model, maxTokens, temperature, systemPrompt and feature flags. " +
-    "Provider API keys are NEVER returned. " +
-    "Use `list_ais` first to discover valid `name` values.",
+    "Returns the full configuration of an Aurora AI. " +
+    "Accepts either `id` or `name` to identify the AI. " +
+    "Returns: displayName, description, provider/model, maxTokens, temperature, systemPrompt and feature flags. " +
+    "Provider API keys are NEVER returned.",
   inputSchema: {
     type: "object" as const,
     properties: {
+      id: {
+        type: "string",
+        description: "The AI's unique ID. Use this or `name`.",
+      },
       name: {
         type: "string",
-        description:
-          "The AI's unique `name` field, as returned by list_ais.",
+        description: "The AI's unique name/slug. Use this or `id`.",
       },
     },
-    required: ["name"],
     additionalProperties: false,
   },
 } as const;
 
 export async function runGetAiConfig(
   creds: Credentials,
-  args: { name?: unknown } | undefined,
-): Promise<AiConfig> {
-  if (!args?.name || typeof args.name !== "string") {
-    throw new Error("Parameter 'name' is required and must be a string.");
+  args: { id?: unknown; name?: unknown } | undefined,
+): Promise<unknown> {
+  if (args?.id && typeof args.id === "string") {
+    return auroraRequest(creds, `/dashboard/ia/${args.id}`);
   }
-  const encoded = encodeURIComponent(args.name);
-  const data = await auroraRequest<BackendResponse>(
-    creds,
-    `/dashboard/mcp-bridge/ais/${encoded}`,
-  );
-  return data.ai;
+  if (args?.name && typeof args.name === "string") {
+    const encoded = encodeURIComponent(args.name);
+    const data = await auroraRequest<{ ai: AiConfig }>(
+      creds,
+      `/dashboard/mcp-bridge/ais/${encoded}`,
+    );
+    return data.ai ?? data;
+  }
+  throw new Error("Either 'id' or 'name' is required.");
 }

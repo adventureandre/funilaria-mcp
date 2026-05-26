@@ -27,7 +27,7 @@ function joinUrl(base: string, path: string): string {
 }
 
 export interface RequestOptions {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   headers?: Record<string, string>;
 }
