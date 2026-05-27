@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_MCP_SERVERS_TOOL = {
@@ -144,7 +144,7 @@ export async function runGetMcpServer(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/mcp/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/mcp/${a.id}`);
 }
 
 export async function runCreateMcpServer(
@@ -164,7 +164,7 @@ export async function runUpdateMcpServer(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   const { id, ...body } = a;
-  return auroraRequest(creds, `/dashboard/mcp/${id}`, { method: "PUT", body });
+  return auroraRequest(creds, apiPath`/dashboard/mcp/${id}`, { method: "PUT", body });
 }
 
 export async function runDeleteMcpServer(
@@ -173,7 +173,7 @@ export async function runDeleteMcpServer(
 ): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/mcp/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/mcp/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }
 
@@ -184,7 +184,7 @@ export async function runLinkMcpServer(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.mcpId || typeof a.mcpId !== "string") throw new Error("Parameter 'mcpId' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/mcp/${a.mcpId}`, { method: "POST" });
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/mcp/${a.mcpId}`, { method: "POST" });
 }
 
 export async function runUnlinkMcpServer(
@@ -194,6 +194,6 @@ export async function runUnlinkMcpServer(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.mcpId || typeof a.mcpId !== "string") throw new Error("Parameter 'mcpId' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/mcp/${a.mcpId}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/mcp/${a.mcpId}`, { method: "DELETE" });
   return { deleted: true };
 }

@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_EMBEDDINGS_TOOL = {
@@ -79,9 +79,9 @@ export async function runListEmbeddings(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (a.stats) {
-    return auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings/stats`);
+    return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings/stats`);
   }
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings`);
 }
 
 export async function runCreateEmbedding(
@@ -92,7 +92,7 @@ export async function runCreateEmbedding(
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.content || typeof a.content !== "string") throw new Error("Parameter 'content' is required.");
   const { aiId, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/embeddings`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/embeddings`, {
     method: "POST",
     body,
   });
@@ -106,7 +106,7 @@ export async function runUpdateEmbedding(
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.embeddingId || typeof a.embeddingId !== "string") throw new Error("Parameter 'embeddingId' is required.");
   const { aiId, embeddingId, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/embeddings/${embeddingId}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/embeddings/${embeddingId}`, {
     method: "PUT",
     body,
   });
@@ -119,7 +119,7 @@ export async function runDeleteEmbedding(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.embeddingId || typeof a.embeddingId !== "string") throw new Error("Parameter 'embeddingId' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings/${a.embeddingId}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings/${a.embeddingId}`, { method: "DELETE" });
   return { deleted: true };
 }
 
@@ -143,6 +143,6 @@ export async function runDeleteAllEmbeddings(
 ): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings`, { method: "DELETE" });
   return { deleted: true };
 }

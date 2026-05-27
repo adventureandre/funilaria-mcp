@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_SKILL_FILES_TOOL = {
@@ -93,7 +93,7 @@ export async function runListSkillFiles(creds: Credentials, args: unknown): Prom
   const a = (args ?? {}) as Record<string, unknown>;
   const aiId = requireStr(a, "aiId");
   const id = requireStr(a, "id");
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}/files`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}/files`);
 }
 
 export async function runGetSkillFile(creds: Credentials, args: unknown): Promise<unknown> {
@@ -101,7 +101,7 @@ export async function runGetSkillFile(creds: Credentials, args: unknown): Promis
   const aiId = requireStr(a, "aiId");
   const id = requireStr(a, "id");
   const fileId = requireStr(a, "fileId");
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`);
 }
 
 export async function runCreateSkillFile(creds: Credentials, args: unknown): Promise<unknown> {
@@ -109,7 +109,7 @@ export async function runCreateSkillFile(creds: Credentials, args: unknown): Pro
   const aiId = requireStr(a, "aiId");
   const id = requireStr(a, "id");
   const { aiId: _, id: __, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}/files`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}/files`, {
     method: "POST",
     body,
   });
@@ -121,7 +121,7 @@ export async function runUpdateSkillFile(creds: Credentials, args: unknown): Pro
   const id = requireStr(a, "id");
   const fileId = requireStr(a, "fileId");
   const { aiId: _, id: __, fileId: ___, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`, {
     method: "PUT",
     body,
   });
@@ -132,6 +132,6 @@ export async function runDeleteSkillFile(creds: Credentials, args: unknown): Pro
   const aiId = requireStr(a, "aiId");
   const id = requireStr(a, "id");
   const fileId = requireStr(a, "fileId");
-  await auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}/files/${fileId}`, { method: "DELETE" });
   return { deleted: true };
 }

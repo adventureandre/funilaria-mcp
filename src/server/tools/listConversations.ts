@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_CONVERSATIONS_TOOL = {
@@ -33,7 +33,7 @@ export async function runListConversations(
   const qs = params.toString() ? `?${params.toString()}` : "";
 
   if (a.aiId && typeof a.aiId === "string") {
-    return auroraRequest(creds, `/dashboard/conversations/${a.aiId}${qs}`);
+    return auroraRequest(creds, apiPath`/dashboard/conversations/${a.aiId}${qs}`);
   }
   return auroraRequest(creds, `/dashboard/conversations/recent${qs}`);
 }

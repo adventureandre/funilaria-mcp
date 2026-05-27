@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const TRANSFER_USER_RESOURCES_TOOL = {
@@ -35,7 +35,7 @@ export async function runTransferUserResources(
     throw new Error("Parameter 'toUserId' is required.");
   return auroraRequest(
     creds,
-    `/dashboard/users/${a.fromUserId}/transfer-to/${a.toUserId}`,
+    apiPath`/dashboard/users/${a.fromUserId}/transfer-to/${a.toUserId}`,
     { method: "POST" },
   );
 }

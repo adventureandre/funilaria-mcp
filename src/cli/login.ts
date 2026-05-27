@@ -77,6 +77,12 @@ export async function runLogin(): Promise<void> {
     auroraUrl =
       urlInput.length > 0 ? urlInput.replace(/\/+$/, "") : DEFAULT_AURORA_URL;
 
+    if (!/^https:\/\//i.test(auroraUrl)) {
+      stdout.write("Aurora URL must use HTTPS.\n");
+      process.exitCode = 1;
+      return;
+    }
+
     email = (await rl.question("Email: ")).trim();
   } finally {
     rl.close();

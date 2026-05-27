@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const GET_SETTINGS_TOOL = {
@@ -52,7 +52,7 @@ export async function runGetSettings(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (a.section && typeof a.section === "string") {
-    return auroraRequest(creds, `/dashboard/settings/${a.section}`);
+    return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}`);
   }
   const [rateLimit, uploads, chat, media] = await Promise.all([
     auroraRequest(creds, "/dashboard/settings/rate-limit"),
@@ -74,7 +74,7 @@ export async function runUpdateSettings(
   if (!a.values || typeof a.values !== "object") {
     throw new Error("Parameter 'values' is required and must be an object.");
   }
-  return auroraRequest(creds, `/dashboard/settings/${a.section}`, {
+  return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}`, {
     method: "PATCH",
     body: a.values,
   });

@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_DOCUMENTS_TOOL = {
@@ -52,7 +52,7 @@ export async function runListDocuments(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/documents`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/documents`);
 }
 
 export async function runGetDocument(
@@ -62,7 +62,7 @@ export async function runGetDocument(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/documents/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/documents/${a.id}`);
 }
 
 export async function runDeleteDocument(
@@ -72,6 +72,6 @@ export async function runDeleteDocument(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/documents/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/documents/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }

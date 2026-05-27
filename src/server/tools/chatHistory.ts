@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const GET_CHAT_HISTORY_TOOL = {
@@ -35,6 +35,6 @@ export async function runGetChatHistory(
     throw new Error("Parameter 'userId' is required.");
   return auroraRequest(
     creds,
-    `/ia/${encodeURIComponent(a.aiName)}/chat/${encodeURIComponent(a.userId)}/history`,
+    apiPath`/ia/${a.aiName}/chat/${a.userId}/history`,
   );
 }

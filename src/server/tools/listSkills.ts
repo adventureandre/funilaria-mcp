@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_SKILLS_TOOL = {
@@ -25,7 +25,7 @@ export async function runListSkills(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (a.aiId && typeof a.aiId === "string") {
-    return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills`);
+    return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills`);
   }
   return auroraRequest(creds, "/dashboard/skills");
 }

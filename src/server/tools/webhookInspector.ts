@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const READ_WEBHOOK_INSPECTOR_TOOL = {
@@ -32,12 +32,12 @@ export const CLEAR_WEBHOOK_INSPECTOR_TOOL = {
 export async function runReadWebhookInspector(creds: Credentials, args: unknown): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.slug || typeof a.slug !== "string") throw new Error("Parameter 'slug' is required.");
-  return auroraRequest(creds, `/dashboard/webhook-inspector/${a.slug}`);
+  return auroraRequest(creds, apiPath`/dashboard/webhook-inspector/${a.slug}`);
 }
 
 export async function runClearWebhookInspector(creds: Credentials, args: unknown): Promise<{ cleared: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.slug || typeof a.slug !== "string") throw new Error("Parameter 'slug' is required.");
-  await auroraRequest(creds, `/dashboard/webhook-inspector/${a.slug}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/webhook-inspector/${a.slug}`, { method: "DELETE" });
   return { cleared: true };
 }

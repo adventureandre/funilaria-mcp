@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_USERS_TOOL = {
@@ -96,7 +96,7 @@ export const DELETE_USER_TOOL = {
 export async function runGetUser(creds: Credentials, args: unknown): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/users/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/users/${a.id}`);
 }
 
 export async function runCreateUser(creds: Credentials, args: unknown): Promise<unknown> {
@@ -111,12 +111,12 @@ export async function runUpdateUser(creds: Credentials, args: unknown): Promise<
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   const { id, ...body } = a;
-  return auroraRequest(creds, `/dashboard/users/${id}`, { method: "PUT", body });
+  return auroraRequest(creds, apiPath`/dashboard/users/${id}`, { method: "PUT", body });
 }
 
 export async function runDeleteUser(creds: Credentials, args: unknown): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/users/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/users/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }

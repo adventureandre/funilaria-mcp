@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const DELETE_AI_TOOL = {
@@ -28,6 +28,6 @@ export async function runDeleteAi(
   if (!a.id || typeof a.id !== "string") {
     throw new Error("Parameter 'id' is required.");
   }
-  await auroraRequest(creds, `/dashboard/ia/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }

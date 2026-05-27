@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_UI_ACTIONS_TOOL = {
@@ -167,7 +167,7 @@ export async function runGetUiAction(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/ui-actions/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/ui-actions/${a.id}`);
 }
 
 export async function runCreateUiAction(
@@ -191,7 +191,7 @@ export async function runUpdateUiAction(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   const { id, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ui-actions/${id}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ui-actions/${id}`, {
     method: "PUT",
     body,
   });
@@ -203,7 +203,7 @@ export async function runDeleteUiAction(
 ): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/ui-actions/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ui-actions/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }
 
@@ -215,7 +215,7 @@ export async function runLinkUiAction(
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.uiActionId || typeof a.uiActionId !== "string") throw new Error("Parameter 'uiActionId' is required.");
   const { aiId, uiActionId, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/ui-actions/${uiActionId}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/ui-actions/${uiActionId}`, {
     method: "POST",
     body,
   });
@@ -228,7 +228,7 @@ export async function runUnlinkUiAction(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.uiActionId || typeof a.uiActionId !== "string") throw new Error("Parameter 'uiActionId' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/ui-actions/${a.uiActionId}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/ui-actions/${a.uiActionId}`, { method: "DELETE" });
   return { deleted: true };
 }
 
@@ -238,7 +238,7 @@ export async function runUiActionStats(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (a.id && typeof a.id === "string") {
-    return auroraRequest(creds, `/dashboard/ui-actions/${a.id}/stats`);
+    return auroraRequest(creds, apiPath`/dashboard/ui-actions/${a.id}/stats`);
   }
   return auroraRequest(creds, "/dashboard/ui-actions/stats");
 }

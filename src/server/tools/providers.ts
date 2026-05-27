@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_PROVIDERS_TOOL = {
@@ -101,7 +101,7 @@ export async function runTestProvider(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/providers/${a.id}/test`);
+  return auroraRequest(creds, apiPath`/dashboard/providers/${a.id}/test`);
 }
 
 export async function runGetProvider(
@@ -110,7 +110,7 @@ export async function runGetProvider(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/providers/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/providers/${a.id}`);
 }
 
 export async function runCreateProvider(
@@ -130,7 +130,7 @@ export async function runUpdateProvider(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   const { id, ...body } = a;
-  return auroraRequest(creds, `/dashboard/providers/${id}`, { method: "PUT", body });
+  return auroraRequest(creds, apiPath`/dashboard/providers/${id}`, { method: "PUT", body });
 }
 
 export async function runDeleteProvider(
@@ -139,6 +139,6 @@ export async function runDeleteProvider(
 ): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/providers/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/providers/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }

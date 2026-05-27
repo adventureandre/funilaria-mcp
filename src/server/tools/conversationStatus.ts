@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const GET_CONVERSATION_STATUS_TOOL = {
@@ -72,20 +72,20 @@ function requirePair(args: unknown): { aiId: string; userId: string } {
 
 export async function runGetConversationStatus(creds: Credentials, args: unknown): Promise<unknown> {
   const { aiId, userId } = requirePair(args);
-  return auroraRequest(creds, `/dashboard/conversations/${aiId}/${encodeURIComponent(userId)}/status`);
+  return auroraRequest(creds, apiPath`/dashboard/conversations/${aiId}/${userId}/status`);
 }
 
 export async function runResumeConversation(creds: Credentials, args: unknown): Promise<unknown> {
   const { aiId, userId } = requirePair(args);
-  return auroraRequest(creds, `/dashboard/conversations/${aiId}/${encodeURIComponent(userId)}/resume`, { method: "POST" });
+  return auroraRequest(creds, apiPath`/dashboard/conversations/${aiId}/${userId}/resume`, { method: "POST" });
 }
 
 export async function runCloseConversation(creds: Credentials, args: unknown): Promise<unknown> {
   const { aiId, userId } = requirePair(args);
-  return auroraRequest(creds, `/dashboard/conversations/${aiId}/${encodeURIComponent(userId)}/close`, { method: "POST" });
+  return auroraRequest(creds, apiPath`/dashboard/conversations/${aiId}/${userId}/close`, { method: "POST" });
 }
 
 export async function runHandoffAck(creds: Credentials, args: unknown): Promise<unknown> {
   const { aiId, userId } = requirePair(args);
-  return auroraRequest(creds, `/dashboard/conversations/${aiId}/${encodeURIComponent(userId)}/handoff/ack`, { method: "POST" });
+  return auroraRequest(creds, apiPath`/dashboard/conversations/${aiId}/${userId}/handoff/ack`, { method: "POST" });
 }

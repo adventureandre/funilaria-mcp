@@ -1,5 +1,16 @@
 import type { Credentials } from "./credentials";
 
+export function apiPath(
+  strings: TemplateStringsArray,
+  ...values: (string | number)[]
+): string {
+  return strings.reduce(
+    (result, str, i) =>
+      result + str + (i < values.length ? encodeURIComponent(String(values[i])) : ""),
+    "",
+  );
+}
+
 export class AuroraApiError extends Error {
   constructor(
     message: string,
@@ -62,6 +73,13 @@ export async function auroraRequest<T>(
   }
 
   if (!res.ok) {
+    if (res.status === 401) {
+      throw new AuroraApiError(
+        "Token expired or invalid. Run `npx @expertcustom/aurora-mcp login` to re-authenticate.",
+        401,
+        parsed,
+      );
+    }
     const message =
       (parsed as any)?.message ??
       (typeof parsed === "string" ? parsed : `HTTP ${res.status}`);

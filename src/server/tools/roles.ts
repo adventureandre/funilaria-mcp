@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_ROLES_TOOL = {
@@ -90,7 +90,7 @@ export async function runUpdateRolePermissions(creds: Credentials, args: unknown
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.roleId || typeof a.roleId !== "string") throw new Error("Parameter 'roleId' is required.");
   if (!Array.isArray(a.permissions)) throw new Error("Parameter 'permissions' is required and must be an array.");
-  return auroraRequest(creds, `/dashboard/roles/${a.roleId}/permissions`, {
+  return auroraRequest(creds, apiPath`/dashboard/roles/${a.roleId}/permissions`, {
     method: "PUT",
     body: { permissions: a.permissions },
   });
@@ -99,6 +99,6 @@ export async function runUpdateRolePermissions(creds: Credentials, args: unknown
 export async function runDeleteRole(creds: Credentials, args: unknown): Promise<{ deleted: true }> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.roleId || typeof a.roleId !== "string") throw new Error("Parameter 'roleId' is required.");
-  await auroraRequest(creds, `/dashboard/roles/${a.roleId}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/roles/${a.roleId}`, { method: "DELETE" });
   return { deleted: true };
 }

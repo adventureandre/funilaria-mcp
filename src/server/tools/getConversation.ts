@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const GET_CONVERSATION_TOOL = {
@@ -37,6 +37,6 @@ export async function runGetConversation(
   const qs = params.toString() ? `?${params.toString()}` : "";
   return auroraRequest(
     creds,
-    `/dashboard/conversations/${a.aiId}/${encodeURIComponent(a.userId)}${qs}`,
+    apiPath`/dashboard/conversations/${a.aiId}/${a.userId}${qs}`,
   );
 }

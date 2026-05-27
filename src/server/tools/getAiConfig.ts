@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export interface AiConfig {
@@ -55,13 +55,13 @@ export async function runGetAiConfig(
   args: { id?: unknown; name?: unknown } | undefined,
 ): Promise<unknown> {
   if (args?.id && typeof args.id === "string") {
-    return auroraRequest(creds, `/dashboard/ia/${args.id}`);
+    return auroraRequest(creds, apiPath`/dashboard/ia/${args.id}`);
   }
   if (args?.name && typeof args.name === "string") {
     const encoded = encodeURIComponent(args.name);
     const data = await auroraRequest<{ ai: AiConfig }>(
       creds,
-      `/dashboard/mcp-bridge/ais/${encoded}`,
+      apiPath`/dashboard/mcp-bridge/ais/${encoded}`,
     );
     return data.ai ?? data;
   }

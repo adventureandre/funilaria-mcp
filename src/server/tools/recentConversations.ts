@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const LIST_RECENT_CONVERSATIONS_TOOL = {
@@ -26,5 +26,5 @@ export async function runListRecentConversations(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   const limit = typeof a.limit === "number" ? a.limit : 30;
-  return auroraRequest(creds, `/dashboard/conversations/recent?limit=${limit}`);
+  return auroraRequest(creds, apiPath`/dashboard/conversations/recent?limit=${limit}`);
 }

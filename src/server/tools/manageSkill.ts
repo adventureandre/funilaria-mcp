@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const CREATE_SKILL_TOOL = {
@@ -161,7 +161,7 @@ export async function runCreateSkill(
   const { aiId, content, ...rest } = a;
   const body: Record<string, unknown> = { ...rest };
   if (content && !body.instructions) body.instructions = content;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills`, {
     method: "POST",
     body,
   });
@@ -177,7 +177,7 @@ export async function runUpdateSkill(
   const { aiId, id, content, ...rest } = a;
   const body: Record<string, unknown> = { ...rest };
   if (content && !body.instructions) body.instructions = content;
-  return auroraRequest(creds, `/dashboard/ia/${aiId}/skills/${id}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/skills/${id}`, {
     method: "PUT",
     body,
   });
@@ -190,7 +190,7 @@ export async function runGetSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}`);
 }
 
 export async function runDeleteSkill(
@@ -200,7 +200,7 @@ export async function runDeleteSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}`, { method: "DELETE" });
+  await auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}`, { method: "DELETE" });
   return { deleted: true };
 }
 
@@ -211,7 +211,7 @@ export async function runImportSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.data || typeof a.data !== "object") throw new Error("Parameter 'data' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/import`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/import`, {
     method: "POST",
     body: a.data,
   });
@@ -224,7 +224,7 @@ export async function runExportSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}/export`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/export`);
 }
 
 export async function runApproveSkill(
@@ -234,7 +234,7 @@ export async function runApproveSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}/approve`, { method: "POST" });
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/approve`, { method: "POST" });
 }
 
 export async function runRejectSkill(
@@ -246,7 +246,7 @@ export async function runRejectSkill(
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   const body: Record<string, unknown> = {};
   if (a.reason && typeof a.reason === "string") body.reason = a.reason;
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}/reject`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/reject`, {
     method: "POST",
     body: Object.keys(body).length > 0 ? body : undefined,
   });
@@ -260,7 +260,7 @@ export async function runMoveSkill(
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   if (a.position === undefined || typeof a.position !== "number") throw new Error("Parameter 'position' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/skills/${a.id}/move`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/move`, {
     method: "POST",
     body: { position: a.position },
   });

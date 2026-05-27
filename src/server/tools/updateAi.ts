@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const UPDATE_AI_TOOL = {
@@ -54,7 +54,7 @@ export async function runUpdateAi(
     throw new Error("Parameter 'id' is required.");
   }
   const { id, ...body } = a;
-  return auroraRequest(creds, `/dashboard/ia/${id}`, {
+  return auroraRequest(creds, apiPath`/dashboard/ia/${id}`, {
     method: "PUT",
     body,
   });

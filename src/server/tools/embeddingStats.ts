@@ -1,4 +1,4 @@
-import { auroraRequest } from "../../auth/client.js";
+import { auroraRequest, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const GET_EMBEDDING_STATS_TOOL = {
@@ -24,5 +24,5 @@ export async function runGetEmbeddingStats(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string")
     throw new Error("Parameter 'aiId' is required.");
-  return auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings/stats`);
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings/stats`);
 }
