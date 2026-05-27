@@ -33,22 +33,34 @@ import { LIST_SKILLS_TOOL, runListSkills } from "./tools/listSkills.js";
 import {
   CREATE_SKILL_TOOL, runCreateSkill,
   UPDATE_SKILL_TOOL, runUpdateSkill,
+  GET_SKILL_TOOL, runGetSkill,
   DELETE_SKILL_TOOL, runDeleteSkill,
+  IMPORT_SKILL_TOOL, runImportSkill,
+  EXPORT_SKILL_TOOL, runExportSkill,
+  APPROVE_SKILL_TOOL, runApproveSkill,
+  REJECT_SKILL_TOOL, runRejectSkill,
+  MOVE_SKILL_TOOL, runMoveSkill,
 } from "./tools/manageSkill.js";
 import {
   LIST_EMBEDDINGS_TOOL, runListEmbeddings,
   CREATE_EMBEDDING_TOOL, runCreateEmbedding,
   UPDATE_EMBEDDING_TOOL, runUpdateEmbedding,
   DELETE_EMBEDDING_TOOL, runDeleteEmbedding,
+  DELETE_ALL_EMBEDDINGS_TOOL, runDeleteAllEmbeddings,
 } from "./tools/embeddings.js";
 import {
   LIST_DOCUMENTS_TOOL, runListDocuments,
+  GET_DOCUMENT_TOOL, runGetDocument,
   DELETE_DOCUMENT_TOOL, runDeleteDocument,
 } from "./tools/documents.js";
 import { TOKEN_USAGE_TOOL, runTokenUsage } from "./tools/tokenUsage.js";
 import {
   LIST_PROVIDERS_TOOL, runListProviders,
   TEST_PROVIDER_TOOL, runTestProvider,
+  GET_PROVIDER_TOOL, runGetProvider,
+  CREATE_PROVIDER_TOOL, runCreateProvider,
+  UPDATE_PROVIDER_TOOL, runUpdateProvider,
+  DELETE_PROVIDER_TOOL, runDeleteProvider,
 } from "./tools/providers.js";
 import {
   GET_SETTINGS_TOOL, runGetSettings,
@@ -76,7 +88,39 @@ import {
 import {
   LIST_USERS_TOOL, runListUsers,
   GET_USER_TOOL, runGetUser,
+  CREATE_USER_TOOL, runCreateUser,
+  UPDATE_USER_TOOL, runUpdateUser,
+  DELETE_USER_TOOL, runDeleteUser,
 } from "./tools/users.js";
+import {
+  LIST_SKILL_FILES_TOOL, runListSkillFiles,
+  GET_SKILL_FILE_TOOL, runGetSkillFile,
+  CREATE_SKILL_FILE_TOOL, runCreateSkillFile,
+  UPDATE_SKILL_FILE_TOOL, runUpdateSkillFile,
+  DELETE_SKILL_FILE_TOOL, runDeleteSkillFile,
+} from "./tools/skillFiles.js";
+import {
+  LIST_ROLES_TOOL, runListRoles,
+  LIST_PERMISSIONS_TOOL, runListPermissions,
+  CREATE_ROLE_TOOL, runCreateRole,
+  UPDATE_ROLE_PERMISSIONS_TOOL, runUpdateRolePermissions,
+  DELETE_ROLE_TOOL, runDeleteRole,
+} from "./tools/roles.js";
+import { LIST_AUDIT_TOOL, runListAudit } from "./tools/audit.js";
+import {
+  READ_WEBHOOK_INSPECTOR_TOOL, runReadWebhookInspector,
+  CLEAR_WEBHOOK_INSPECTOR_TOOL, runClearWebhookInspector,
+} from "./tools/webhookInspector.js";
+import {
+  GET_ME_TOOL, runGetMe,
+  GET_STATUS_TOOL, runGetStatus,
+} from "./tools/status.js";
+import { LIST_RECENT_CONVERSATIONS_TOOL, runListRecentConversations } from "./tools/recentConversations.js";
+import { GET_CHAT_HISTORY_TOOL, runGetChatHistory } from "./tools/chatHistory.js";
+import { GET_EMBEDDING_STATS_TOOL, runGetEmbeddingStats } from "./tools/embeddingStats.js";
+import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
+import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
+import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources } from "./tools/transferUser.js";
 
 async function requireCredentials(): Promise<Credentials> {
   const creds = await loadCredentials();
@@ -125,16 +169,30 @@ const ALL_TOOLS = [
   HANDOFF_ACK_TOOL,
   // Skills
   LIST_SKILLS_TOOL,
+  GET_SKILL_TOOL,
   CREATE_SKILL_TOOL,
   UPDATE_SKILL_TOOL,
   DELETE_SKILL_TOOL,
+  IMPORT_SKILL_TOOL,
+  EXPORT_SKILL_TOOL,
+  APPROVE_SKILL_TOOL,
+  REJECT_SKILL_TOOL,
+  MOVE_SKILL_TOOL,
+  // Skill Files
+  LIST_SKILL_FILES_TOOL,
+  GET_SKILL_FILE_TOOL,
+  CREATE_SKILL_FILE_TOOL,
+  UPDATE_SKILL_FILE_TOOL,
+  DELETE_SKILL_FILE_TOOL,
   // Embeddings
   LIST_EMBEDDINGS_TOOL,
   CREATE_EMBEDDING_TOOL,
   UPDATE_EMBEDDING_TOOL,
   DELETE_EMBEDDING_TOOL,
+  DELETE_ALL_EMBEDDINGS_TOOL,
   // Documents
   LIST_DOCUMENTS_TOOL,
+  GET_DOCUMENT_TOOL,
   DELETE_DOCUMENT_TOOL,
   // UI Actions
   LIST_UI_ACTIONS_TOOL,
@@ -155,6 +213,10 @@ const ALL_TOOLS = [
   UNLINK_MCP_SERVER_TOOL,
   // Providers
   LIST_PROVIDERS_TOOL,
+  GET_PROVIDER_TOOL,
+  CREATE_PROVIDER_TOOL,
+  UPDATE_PROVIDER_TOOL,
+  DELETE_PROVIDER_TOOL,
   TEST_PROVIDER_TOOL,
   // Settings
   GET_SETTINGS_TOOL,
@@ -162,8 +224,32 @@ const ALL_TOOLS = [
   // Users
   LIST_USERS_TOOL,
   GET_USER_TOOL,
+  CREATE_USER_TOOL,
+  UPDATE_USER_TOOL,
+  DELETE_USER_TOOL,
+  // Roles & Permissions
+  LIST_ROLES_TOOL,
+  LIST_PERMISSIONS_TOOL,
+  CREATE_ROLE_TOOL,
+  UPDATE_ROLE_PERMISSIONS_TOOL,
+  DELETE_ROLE_TOOL,
+  // Auth & Status
+  GET_ME_TOOL,
+  GET_STATUS_TOOL,
+  // Audit
+  LIST_AUDIT_TOOL,
+  // Webhook Inspector
+  READ_WEBHOOK_INSPECTOR_TOOL,
+  CLEAR_WEBHOOK_INSPECTOR_TOOL,
   // Tokens
   TOKEN_USAGE_TOOL,
+  // Extra
+  LIST_RECENT_CONVERSATIONS_TOOL,
+  GET_CHAT_HISTORY_TOOL,
+  GET_EMBEDDING_STATS_TOOL,
+  UPLOAD_DOCUMENT_TOOL,
+  UPLOAD_SKILL_FILE_TOOL,
+  TRANSFER_USER_RESOURCES_TOOL,
 ];
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
@@ -183,14 +269,27 @@ const HANDLERS: Record<string, ToolHandler> = {
   [CLOSE_CONVERSATION_TOOL.name]: runCloseConversation,
   [HANDOFF_ACK_TOOL.name]: runHandoffAck,
   [LIST_SKILLS_TOOL.name]: runListSkills,
+  [GET_SKILL_TOOL.name]: runGetSkill,
   [CREATE_SKILL_TOOL.name]: runCreateSkill,
   [UPDATE_SKILL_TOOL.name]: runUpdateSkill,
   [DELETE_SKILL_TOOL.name]: runDeleteSkill,
+  [IMPORT_SKILL_TOOL.name]: runImportSkill,
+  [EXPORT_SKILL_TOOL.name]: runExportSkill,
+  [APPROVE_SKILL_TOOL.name]: runApproveSkill,
+  [REJECT_SKILL_TOOL.name]: runRejectSkill,
+  [MOVE_SKILL_TOOL.name]: runMoveSkill,
+  [LIST_SKILL_FILES_TOOL.name]: runListSkillFiles,
+  [GET_SKILL_FILE_TOOL.name]: runGetSkillFile,
+  [CREATE_SKILL_FILE_TOOL.name]: runCreateSkillFile,
+  [UPDATE_SKILL_FILE_TOOL.name]: runUpdateSkillFile,
+  [DELETE_SKILL_FILE_TOOL.name]: runDeleteSkillFile,
   [LIST_EMBEDDINGS_TOOL.name]: runListEmbeddings,
   [CREATE_EMBEDDING_TOOL.name]: runCreateEmbedding,
   [UPDATE_EMBEDDING_TOOL.name]: runUpdateEmbedding,
   [DELETE_EMBEDDING_TOOL.name]: runDeleteEmbedding,
+  [DELETE_ALL_EMBEDDINGS_TOOL.name]: runDeleteAllEmbeddings,
   [LIST_DOCUMENTS_TOOL.name]: runListDocuments,
+  [GET_DOCUMENT_TOOL.name]: runGetDocument,
   [DELETE_DOCUMENT_TOOL.name]: runDeleteDocument,
   [LIST_UI_ACTIONS_TOOL.name]: runListUiActions,
   [GET_UI_ACTION_TOOL.name]: runGetUiAction,
@@ -208,12 +307,35 @@ const HANDLERS: Record<string, ToolHandler> = {
   [LINK_MCP_SERVER_TOOL.name]: runLinkMcpServer,
   [UNLINK_MCP_SERVER_TOOL.name]: runUnlinkMcpServer,
   [LIST_PROVIDERS_TOOL.name]: (_c) => runListProviders(_c),
+  [GET_PROVIDER_TOOL.name]: runGetProvider,
+  [CREATE_PROVIDER_TOOL.name]: runCreateProvider,
+  [UPDATE_PROVIDER_TOOL.name]: runUpdateProvider,
+  [DELETE_PROVIDER_TOOL.name]: runDeleteProvider,
   [TEST_PROVIDER_TOOL.name]: runTestProvider,
   [GET_SETTINGS_TOOL.name]: runGetSettings,
   [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
   [LIST_USERS_TOOL.name]: runListUsers,
   [GET_USER_TOOL.name]: runGetUser,
+  [CREATE_USER_TOOL.name]: runCreateUser,
+  [UPDATE_USER_TOOL.name]: runUpdateUser,
+  [DELETE_USER_TOOL.name]: runDeleteUser,
+  [LIST_ROLES_TOOL.name]: (_c) => runListRoles(_c),
+  [LIST_PERMISSIONS_TOOL.name]: (_c) => runListPermissions(_c),
+  [CREATE_ROLE_TOOL.name]: runCreateRole,
+  [UPDATE_ROLE_PERMISSIONS_TOOL.name]: runUpdateRolePermissions,
+  [DELETE_ROLE_TOOL.name]: runDeleteRole,
+  [GET_ME_TOOL.name]: (_c) => runGetMe(_c),
+  [GET_STATUS_TOOL.name]: (_c) => runGetStatus(_c),
+  [LIST_AUDIT_TOOL.name]: runListAudit,
+  [READ_WEBHOOK_INSPECTOR_TOOL.name]: runReadWebhookInspector,
+  [CLEAR_WEBHOOK_INSPECTOR_TOOL.name]: runClearWebhookInspector,
   [TOKEN_USAGE_TOOL.name]: (_c) => runTokenUsage(_c),
+  [LIST_RECENT_CONVERSATIONS_TOOL.name]: runListRecentConversations,
+  [GET_CHAT_HISTORY_TOOL.name]: runGetChatHistory,
+  [GET_EMBEDDING_STATS_TOOL.name]: runGetEmbeddingStats,
+  [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
+  [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
+  [TRANSFER_USER_RESOURCES_TOOL.name]: runTransferUserResources,
 };
 
 export async function startServer(): Promise<void> {

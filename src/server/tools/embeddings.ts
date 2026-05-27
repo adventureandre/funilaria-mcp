@@ -122,3 +122,27 @@ export async function runDeleteEmbedding(
   await auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings/${a.embeddingId}`, { method: "DELETE" });
   return { deleted: true };
 }
+
+export const DELETE_ALL_EMBEDDINGS_TOOL = {
+  name: "delete_all_embeddings",
+  title: "Delete all embeddings for an AI",
+  description: "Removes ALL embedding entries from an AI's knowledge base. Use with caution.",
+  inputSchema: {
+    type: "object" as const,
+    properties: {
+      aiId: { type: "string", description: "The AI's ID." },
+    },
+    required: ["aiId"],
+    additionalProperties: false,
+  },
+} as const;
+
+export async function runDeleteAllEmbeddings(
+  creds: Credentials,
+  args: unknown,
+): Promise<{ deleted: true }> {
+  const a = (args ?? {}) as Record<string, unknown>;
+  if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
+  await auroraRequest(creds, `/dashboard/ia/${a.aiId}/embeddings`, { method: "DELETE" });
+  return { deleted: true };
+}
