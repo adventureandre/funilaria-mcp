@@ -35,6 +35,7 @@ export const UPDATE_AI_TOOL = {
       canDelegateToOtherAIs: { type: "boolean" },
       availableForDelegation: { type: "boolean" },
       canShareEmbeddings: { type: "boolean" },
+      canGenerateDocuments: { type: "boolean" },
       handoffEnabled: { type: "boolean" },
       handoffCategories: { type: "array", items: { type: "string" } },
       handoffPromptHint: { type: "string" },
