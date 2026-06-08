@@ -63,6 +63,14 @@ import {
   DELETE_PROVIDER_TOOL, runDeleteProvider,
 } from "./tools/providers.js";
 import {
+  LIST_LLM_PROVIDERS_TOOL, runListLlmProviders,
+  GET_LLM_PROVIDER_TOOL, runGetLlmProvider,
+  CREATE_LLM_PROVIDER_TOOL, runCreateLlmProvider,
+  UPDATE_LLM_PROVIDER_TOOL, runUpdateLlmProvider,
+  DELETE_LLM_PROVIDER_TOOL, runDeleteLlmProvider,
+  TEST_LLM_PROVIDER_TOOL, runTestLlmProvider,
+} from "./tools/llmProviders.js";
+import {
   GET_SETTINGS_TOOL, runGetSettings,
   UPDATE_SETTINGS_TOOL, runUpdateSettings,
 } from "./tools/settings.js";
@@ -218,6 +226,12 @@ const ALL_TOOLS = [
   UPDATE_PROVIDER_TOOL,
   DELETE_PROVIDER_TOOL,
   TEST_PROVIDER_TOOL,
+  LIST_LLM_PROVIDERS_TOOL,
+  GET_LLM_PROVIDER_TOOL,
+  CREATE_LLM_PROVIDER_TOOL,
+  UPDATE_LLM_PROVIDER_TOOL,
+  DELETE_LLM_PROVIDER_TOOL,
+  TEST_LLM_PROVIDER_TOOL,
   // Settings
   GET_SETTINGS_TOOL,
   UPDATE_SETTINGS_TOOL,
@@ -312,6 +326,12 @@ const HANDLERS: Record<string, ToolHandler> = {
   [UPDATE_PROVIDER_TOOL.name]: runUpdateProvider,
   [DELETE_PROVIDER_TOOL.name]: runDeleteProvider,
   [TEST_PROVIDER_TOOL.name]: runTestProvider,
+  [LIST_LLM_PROVIDERS_TOOL.name]: (_c) => runListLlmProviders(_c),
+  [GET_LLM_PROVIDER_TOOL.name]: runGetLlmProvider,
+  [CREATE_LLM_PROVIDER_TOOL.name]: runCreateLlmProvider,
+  [UPDATE_LLM_PROVIDER_TOOL.name]: runUpdateLlmProvider,
+  [DELETE_LLM_PROVIDER_TOOL.name]: runDeleteLlmProvider,
+  [TEST_LLM_PROVIDER_TOOL.name]: runTestLlmProvider,
   [GET_SETTINGS_TOOL.name]: runGetSettings,
   [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
   [LIST_USERS_TOOL.name]: runListUsers,
