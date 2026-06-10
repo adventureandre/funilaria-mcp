@@ -25,6 +25,13 @@ export const UPDATE_AI_TOOL = {
       whisperPrompt: { type: "string" },
       maxTokens: { type: "integer", minimum: 1 },
       temperature: { type: "number", minimum: 0, maximum: 2 },
+      reasoningEffort: {
+        type: "string",
+        enum: ["minimal", "low", "medium", "high", ""],
+        description:
+          "Reasoning effort for reasoning models (gpt-5/o-series). " +
+          "Lower = faster responses. Empty string = model default.",
+      },
       messageMaxLength: { type: "integer", minimum: 1 },
       isActive: { type: "boolean" },
       embeddingEnabled: { type: "boolean" },

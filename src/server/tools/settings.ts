@@ -15,6 +15,12 @@ export const GET_SETTINGS_TOOL = {
         enum: ["rate-limit", "uploads", "chat", "media"],
         description: "Which settings section to read.",
       },
+      ownerId: {
+        type: "string",
+        description:
+          "Owner (tenant) ID to read scoped settings (master only). " +
+          "Omit for the global values. Requires `section`.",
+      },
     },
     additionalProperties: false,
   },
@@ -40,6 +46,12 @@ export const UPDATE_SETTINGS_TOOL = {
         description: "Key-value pairs to set.",
         additionalProperties: true,
       },
+      ownerId: {
+        type: "string",
+        description:
+          "Owner (tenant) ID to scope the settings to. Master only — " +
+          "omit to write the GLOBAL settings (affects all tenants).",
+      },
     },
     required: ["section", "values"],
     additionalProperties: false,
@@ -52,7 +64,11 @@ export async function runGetSettings(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (a.section && typeof a.section === "string") {
-    return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}`);
+    const qs =
+      a.ownerId && typeof a.ownerId === "string"
+        ? `?ownerId=${encodeURIComponent(a.ownerId)}`
+        : "";
+    return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}` + qs);
   }
   const [rateLimit, uploads, chat, media] = await Promise.all([
     auroraRequest(creds, "/dashboard/settings/rate-limit"),
@@ -74,7 +90,13 @@ export async function runUpdateSettings(
   if (!a.values || typeof a.values !== "object") {
     throw new Error("Parameter 'values' is required and must be an object.");
   }
-  return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}`, {
+  // ownerId vai na query string — é onde o backend (ownerFilter) lê o escopo
+  // quando o ator é master. Sem ele, master grava o GLOBAL.
+  const qs =
+    a.ownerId && typeof a.ownerId === "string"
+      ? `?ownerId=${encodeURIComponent(a.ownerId)}`
+      : "";
+  return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}` + qs, {
     method: "PATCH",
     body: a.values,
   });
