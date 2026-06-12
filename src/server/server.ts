@@ -137,6 +137,13 @@ import { GET_EMBEDDING_STATS_TOOL, runGetEmbeddingStats } from "./tools/embeddin
 import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
 import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
 import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources } from "./tools/transferUser.js";
+import {
+  LIST_SCHEDULES_TOOL, runListSchedules,
+  GET_SCHEDULE_TOOL, runGetSchedule,
+  CREATE_SCHEDULE_TOOL, runCreateSchedule,
+  UPDATE_SCHEDULE_TOOL, runUpdateSchedule,
+  DELETE_SCHEDULE_TOOL, runDeleteSchedule,
+} from "./tools/schedules.js";
 
 async function requireCredentials(): Promise<Credentials> {
   const creds = await loadCredentials();
@@ -278,6 +285,12 @@ const ALL_TOOLS = [
   UPLOAD_DOCUMENT_TOOL,
   UPLOAD_SKILL_FILE_TOOL,
   TRANSFER_USER_RESOURCES_TOOL,
+  // Schedules
+  LIST_SCHEDULES_TOOL,
+  GET_SCHEDULE_TOOL,
+  CREATE_SCHEDULE_TOOL,
+  UPDATE_SCHEDULE_TOOL,
+  DELETE_SCHEDULE_TOOL,
 ];
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
@@ -376,6 +389,11 @@ const HANDLERS: Record<string, ToolHandler> = {
   [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
   [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
   [TRANSFER_USER_RESOURCES_TOOL.name]: runTransferUserResources,
+  [LIST_SCHEDULES_TOOL.name]: runListSchedules,
+  [GET_SCHEDULE_TOOL.name]: runGetSchedule,
+  [CREATE_SCHEDULE_TOOL.name]: runCreateSchedule,
+  [UPDATE_SCHEDULE_TOOL.name]: runUpdateSchedule,
+  [DELETE_SCHEDULE_TOOL.name]: runDeleteSchedule,
 };
 
 export async function startServer(): Promise<void> {

@@ -59,7 +59,7 @@ Ou edite manualmente o `~/.claude.json`, seção `mcpServers`:
 
 Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**.
 
-## Tools disponíveis (81)
+## Tools disponíveis (86)
 
 | Categoria | Tools |
 |-----------|-------|
@@ -73,6 +73,7 @@ Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**
 | **UI Actions** | `list_ui_actions`, `get_ui_action`, `create_ui_action`, `update_ui_action`, `delete_ui_action`, `link_ui_action_to_ai`, `unlink_ui_action_from_ai`, `ui_action_stats` |
 | **MCP Servers** | `list_mcp_servers`, `get_mcp_server`, `create_mcp_server`, `update_mcp_server`, `delete_mcp_server`, `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
 | **Providers** | `list_providers`, `get_provider`, `create_provider`, `update_provider`, `delete_provider`, `test_provider` |
+| **Scheduled Tasks** | `list_schedules`, `get_schedule`, `create_schedule`, `update_schedule`, `delete_schedule` |
 | **Usuários** | `list_users`, `get_user`, `create_user`, `update_user`, `delete_user`, `transfer_user_resources`, `get_me` |
 | **Roles** | `list_roles`, `list_permissions`, `create_role`, `update_role_permissions`, `delete_role` |
 | **Settings** | `get_settings`, `update_settings` |
@@ -100,6 +101,39 @@ Pra remover as credenciais:
 ```bash
 rm ~/.config/aurora-mcp/credentials.json
 ```
+
+## Exemplos: Agendar Tarefas com a IA
+
+A tool `schedules` permite que a IA crie, liste e gerencie tarefas agendadas. Exemplo de conversa:
+
+```
+Usuário: "Agende uma tarefa para gerar o boletim todo dia às 8h"
+
+Claude (usando schedules tool):
+  create_schedule({
+    aiId: "aurora-123",
+    title: "Gerar boletim diário",
+    instruction: "Gere o boletim com dados de hoje",
+    deliveryType: "email",
+    target: "diretor@empresa.com.br",
+    preset: { kind: "daily", hour: 8, minute: 0 }
+  })
+
+Resultado: Tarefa criada e agendada ✓
+```
+
+Tipos de entrega:
+- **`email`** — envia resultado por email (requer `target` com email válido)
+- **`whatsapp`** — envia no WhatsApp (requer `target` com número/chatId e IA com provider ativo)
+- **`internal`** — resultado fica no histórico da conversa (sem `target`)
+
+Presets de recorrência:
+- `{ kind: "daily", hour: 8, minute: 30 }` — todo dia às 8:30
+- `{ kind: "weekly", weekday: 3, hour: 14, minute: 0 }` — quarta-feira às 14:00
+- `{ kind: "monthly", day: 1, hour: 9, minute: 0 }` — 1º de cada mês às 9:00
+- `{ kind: "hourly", everyHours: 3, minute: 15 }` — a cada 3 horas na marca :15
+
+Mais exemplos no dashboard Aurora → aba "Agendamentos".
 
 ## Troubleshooting
 
