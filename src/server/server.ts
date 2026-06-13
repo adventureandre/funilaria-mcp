@@ -71,6 +71,14 @@ import {
   TEST_LLM_PROVIDER_TOOL, runTestLlmProvider,
 } from "./tools/llmProviders.js";
 import {
+  LIST_EMBEDDING_PROVIDERS_TOOL, runListEmbeddingProviders,
+  GET_EMBEDDING_PROVIDER_TOOL, runGetEmbeddingProvider,
+  CREATE_EMBEDDING_PROVIDER_TOOL, runCreateEmbeddingProvider,
+  UPDATE_EMBEDDING_PROVIDER_TOOL, runUpdateEmbeddingProvider,
+  DELETE_EMBEDDING_PROVIDER_TOOL, runDeleteEmbeddingProvider,
+  TEST_EMBEDDING_PROVIDER_TOOL, runTestEmbeddingProvider,
+} from "./tools/embeddingProviders.js";
+import {
   GET_SETTINGS_TOOL, runGetSettings,
   UPDATE_SETTINGS_TOOL, runUpdateSettings,
 } from "./tools/settings.js";
@@ -232,6 +240,12 @@ const ALL_TOOLS = [
   UPDATE_LLM_PROVIDER_TOOL,
   DELETE_LLM_PROVIDER_TOOL,
   TEST_LLM_PROVIDER_TOOL,
+  LIST_EMBEDDING_PROVIDERS_TOOL,
+  GET_EMBEDDING_PROVIDER_TOOL,
+  CREATE_EMBEDDING_PROVIDER_TOOL,
+  UPDATE_EMBEDDING_PROVIDER_TOOL,
+  DELETE_EMBEDDING_PROVIDER_TOOL,
+  TEST_EMBEDDING_PROVIDER_TOOL,
   // Settings
   GET_SETTINGS_TOOL,
   UPDATE_SETTINGS_TOOL,
@@ -332,6 +346,12 @@ const HANDLERS: Record<string, ToolHandler> = {
   [UPDATE_LLM_PROVIDER_TOOL.name]: runUpdateLlmProvider,
   [DELETE_LLM_PROVIDER_TOOL.name]: runDeleteLlmProvider,
   [TEST_LLM_PROVIDER_TOOL.name]: runTestLlmProvider,
+  [LIST_EMBEDDING_PROVIDERS_TOOL.name]: (_c) => runListEmbeddingProviders(_c),
+  [GET_EMBEDDING_PROVIDER_TOOL.name]: runGetEmbeddingProvider,
+  [CREATE_EMBEDDING_PROVIDER_TOOL.name]: runCreateEmbeddingProvider,
+  [UPDATE_EMBEDDING_PROVIDER_TOOL.name]: runUpdateEmbeddingProvider,
+  [DELETE_EMBEDDING_PROVIDER_TOOL.name]: runDeleteEmbeddingProvider,
+  [TEST_EMBEDDING_PROVIDER_TOOL.name]: runTestEmbeddingProvider,
   [GET_SETTINGS_TOOL.name]: runGetSettings,
   [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
   [LIST_USERS_TOOL.name]: runListUsers,
