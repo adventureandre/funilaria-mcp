@@ -28,7 +28,13 @@ export const UPDATE_AI_TOOL = {
       messageMaxLength: { type: "integer", minimum: 1 },
       isActive: { type: "boolean" },
       embeddingEnabled: { type: "boolean" },
-      embeddingProvider: { type: "string" },
+      embeddingProvider: { type: "string", description: "Legacy embedding vendor slug (openai|gemini). Prefer embeddingProviderId." },
+      embeddingProviderId: { type: "string", description: "FK to a config-driven embedding provider. Overrides the legacy embeddingProvider/embeddingKey." },
+      confirmDropEmbeddings: {
+        type: "boolean",
+        description:
+          "Required to confirm dropping this AI's existing embeddings when switching embedding provider/model (incompatible vector space). Without it the switch is blocked (409).",
+      },
       embeddingThreshold: { type: "number", minimum: 0, maximum: 1 },
       canLearnFromUsers: { type: "boolean" },
       canAccessOtherAIs: { type: "boolean" },
