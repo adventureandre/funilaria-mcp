@@ -48,33 +48,57 @@ export const GET_PROVIDER_TOOL = {
   },
 } as const;
 
+// MessagingProvider é o canal de mensageria (gateway WhatsApp/HTTP). Modelo
+// plano no backend — sem objeto `config`. `apiKey` é o token de auth do gateway.
+const MESSAGING_PROVIDER_FIELDS = {
+  displayName: { type: "string", description: "Human-friendly label." },
+  baseUrl: { type: "string", description: "Gateway base URL." },
+  apiKey: { type: "string", description: "Auth token/API key for the gateway." },
+  session: { type: "string", description: "Session name (default 'default')." },
+  authHeader: { type: "string", description: "Custom auth header name, if any." },
+  endpointSendText: { type: "string", description: "Path/URL to send text messages." },
+  endpointSendImage: { type: "string", description: "Path/URL to send images." },
+  endpointSendFile: { type: "string", description: "Path/URL to send files." },
+  endpointStatus: { type: "string", description: "Path/URL for connection status." },
+  endpointStart: { type: "string", description: "Path/URL to start/connect the session." },
+  endpointStop: { type: "string", description: "Path/URL to stop/disconnect the session." },
+  bodyTemplateSendText: { type: "string", description: "Request body template for text." },
+  bodyTemplateSendMedia: { type: "string", description: "Request body template for media." },
+} as const;
+
 export const CREATE_PROVIDER_TOOL = {
   name: "create_provider",
-  title: "Create a provider",
-  description: "Registers a new messaging/LLM provider in Aurora.",
+  title: "Create a messaging provider",
+  description:
+    "Registers a new messaging provider (WhatsApp/HTTP gateway). " +
+    "`apiKey` is the gateway auth token.",
   inputSchema: {
     type: "object" as const,
     properties: {
       name: { type: "string", description: "Provider name/slug." },
-      type: { type: "string", description: "Provider type (e.g. 'openai', 'anthropic', 'custom')." },
-      config: { type: "object", description: "Provider configuration (API keys, endpoints, etc).", additionalProperties: true },
+      type: { type: "string", description: "Messaging channel type/driver." },
+      ...MESSAGING_PROVIDER_FIELDS,
+      ownerId: { type: "string", description: "Owner (master only)." },
     },
-    required: ["name", "type"],
+    required: ["name", "displayName", "type", "baseUrl"],
     additionalProperties: false,
   },
 } as const;
 
 export const UPDATE_PROVIDER_TOOL = {
   name: "update_provider",
-  title: "Update a provider",
-  description: "Updates an existing provider's configuration.",
+  title: "Update a messaging provider",
+  description:
+    "Updates an existing messaging provider. Pass only the fields to change. " +
+    "Re-sending the masked `apiKey` from get_provider leaves the stored key untouched.",
   inputSchema: {
     type: "object" as const,
     properties: {
       id: { type: "string", description: "The provider's ID." },
-      name: { type: "string" },
       type: { type: "string" },
-      config: { type: "object", additionalProperties: true },
+      isActive: { type: "boolean" },
+      ...MESSAGING_PROVIDER_FIELDS,
+      ownerId: { type: "string", description: "Owner (master only)." },
     },
     required: ["id"],
     additionalProperties: false,

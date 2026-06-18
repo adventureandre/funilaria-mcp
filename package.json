@@ -1,6 +1,6 @@
 {
   "name": "@expertcustom/aurora-mcp",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "MCP server to connect Claude Code (and other MCP clients) to Aurora AIs",
   "license": "UNLICENSED",
   "type": "module",

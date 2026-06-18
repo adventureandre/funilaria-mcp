@@ -12,6 +12,10 @@ export const LIST_EMBEDDINGS_TOOL = {
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
       stats: { type: "boolean", description: "If true, returns stats instead of listing entries." },
+      page: { type: "integer", minimum: 1, description: "Page number (when listing)." },
+      limit: { type: "integer", minimum: 1, maximum: 100, description: "Entries per page (when listing)." },
+      search: { type: "string", description: "Filter entries by content (when listing)." },
+      source: { type: "string", description: "Filter entries by source (e.g. 'manual', 'document')." },
     },
     required: ["aiId"],
     additionalProperties: false,
@@ -29,11 +33,6 @@ export const CREATE_EMBEDDING_TOOL = {
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
       content: { type: "string", description: "The text content to embed." },
-      metadata: {
-        type: "object",
-        description: "Optional metadata to associate with the embedding.",
-        additionalProperties: true,
-      },
     },
     required: ["aiId", "content"],
     additionalProperties: false,
@@ -43,14 +42,13 @@ export const CREATE_EMBEDDING_TOOL = {
 export const UPDATE_EMBEDDING_TOOL = {
   name: "update_embedding",
   title: "Update an embedding",
-  description: "Updates the content or metadata of an existing embedding entry.",
+  description: "Updates the content of an existing embedding entry.",
   inputSchema: {
     type: "object" as const,
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
       embeddingId: { type: "string", description: "The embedding's ID." },
       content: { type: "string", description: "New text content." },
-      metadata: { type: "object", description: "New metadata.", additionalProperties: true },
     },
     required: ["aiId", "embeddingId"],
     additionalProperties: false,
@@ -81,7 +79,13 @@ export async function runListEmbeddings(
   if (a.stats) {
     return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings/stats`);
   }
-  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings`);
+  const params = new URLSearchParams();
+  if (a.page) params.set("page", String(a.page));
+  if (a.limit) params.set("limit", String(a.limit));
+  if (a.search && typeof a.search === "string") params.set("search", a.search);
+  if (a.source && typeof a.source === "string") params.set("source", a.source);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/embeddings` + qs);
 }
 
 export async function runCreateEmbedding(

@@ -33,8 +33,13 @@ export const CREATE_ROLE_TOOL = {
       name: { type: "string", description: "Role name/slug." },
       displayName: { type: "string", description: "Human-friendly role name." },
       description: { type: "string", description: "Role description." },
+      permissions: {
+        type: "array",
+        items: { type: "string" },
+        description: "Optional initial permissions as 'resource:action' strings.",
+      },
     },
-    required: ["name"],
+    required: ["name", "displayName"],
     additionalProperties: false,
   },
 } as const;
@@ -83,6 +88,7 @@ export async function runListPermissions(creds: Credentials): Promise<unknown> {
 export async function runCreateRole(creds: Credentials, args: unknown): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.name || typeof a.name !== "string") throw new Error("Parameter 'name' is required.");
+  if (!a.displayName || typeof a.displayName !== "string") throw new Error("Parameter 'displayName' is required.");
   return auroraRequest(creds, "/dashboard/roles", { method: "POST", body: a });
 }
 

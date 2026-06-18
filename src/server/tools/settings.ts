@@ -1,19 +1,50 @@
-import { auroraRequest, apiPath } from "../../auth/client.js";
+import { auroraRequest } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
+
+const SECTIONS = [
+  "rate-limit",
+  "uploads",
+  "chat",
+  "workspace",
+  "mcp",
+  "chat-limits",
+  "media",
+  "gendoc",
+] as const;
+
+// gendoc tem um sub-recurso de quota por IA (/gendoc/quota/:aiId). media aceita
+// override por IA via ?aiId=. Para as demais seções, aiId não se aplica.
+function settingsPath(section: string, aiId?: string, ownerId?: string): string {
+  if (section === "gendoc" && aiId) {
+    return `/dashboard/settings/gendoc/quota/${encodeURIComponent(aiId)}`;
+  }
+  const params = new URLSearchParams();
+  if (section === "media" && aiId) params.set("aiId", aiId);
+  if (ownerId) params.set("ownerId", ownerId);
+  const qs = params.toString();
+  return `/dashboard/settings/${section}${qs ? `?${qs}` : ""}`;
+}
 
 export const GET_SETTINGS_TOOL = {
   name: "get_settings",
   title: "Get system settings",
   description:
-    "Returns Aurora system settings. Specify `section` to get a specific group: " +
-    "'rate-limit', 'uploads', 'chat', or 'media'. Omit for all sections.",
+    "Returns Aurora system settings. Specify `section` to read one group: " +
+    "'rate-limit', 'uploads', 'chat', 'workspace', 'mcp', 'chat-limits', 'media', 'gendoc'. " +
+    "Omit for all sections. For 'gendoc' with `aiId`, returns that AI's effective quota; " +
+    "for 'media' with `aiId`, returns that AI's override.",
   inputSchema: {
     type: "object" as const,
     properties: {
       section: {
         type: "string",
-        enum: ["rate-limit", "uploads", "chat", "media"],
+        enum: [...SECTIONS],
         description: "Which settings section to read.",
+      },
+      aiId: {
+        type: "string",
+        description:
+          "AI ID for per-AI scope. Applies to 'gendoc' (quota) and 'media' (override).",
       },
       ownerId: {
         type: "string",
@@ -31,20 +62,27 @@ export const UPDATE_SETTINGS_TOOL = {
   title: "Update system settings",
   description:
     "Updates Aurora system settings for a specific section. " +
-    "Requires system:settings:write permission. " +
-    "Pass the section and the key-value pairs to update.",
+    "Requires the setting:write permission (some sections are tenant-admin scoped). " +
+    "Pass the section and the key-value pairs to update. " +
+    "For 'gendoc' with `aiId`, sets that AI's quota override (use { quotaMB: null } to reset). " +
+    "For 'media' with `aiId`, writes that AI's override.",
   inputSchema: {
     type: "object" as const,
     properties: {
       section: {
         type: "string",
-        enum: ["rate-limit", "uploads", "chat", "media"],
+        enum: [...SECTIONS],
         description: "Which settings section to update.",
       },
       values: {
         type: "object",
         description: "Key-value pairs to set.",
         additionalProperties: true,
+      },
+      aiId: {
+        type: "string",
+        description:
+          "AI ID for per-AI scope. Applies to 'gendoc' (quota override) and 'media' (override).",
       },
       ownerId: {
         type: "string",
@@ -63,20 +101,18 @@ export async function runGetSettings(
   args: unknown,
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
-  if (a.section && typeof a.section === "string") {
-    const qs =
-      a.ownerId && typeof a.ownerId === "string"
-        ? `?ownerId=${encodeURIComponent(a.ownerId)}`
-        : "";
-    return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}` + qs);
+  const section = typeof a.section === "string" ? a.section : undefined;
+  const aiId = typeof a.aiId === "string" ? a.aiId : undefined;
+  const ownerId = typeof a.ownerId === "string" ? a.ownerId : undefined;
+
+  if (section) {
+    return auroraRequest(creds, settingsPath(section, aiId, ownerId));
   }
-  const [rateLimit, uploads, chat, media] = await Promise.all([
-    auroraRequest(creds, "/dashboard/settings/rate-limit"),
-    auroraRequest(creds, "/dashboard/settings/uploads"),
-    auroraRequest(creds, "/dashboard/settings/chat"),
-    auroraRequest(creds, "/dashboard/settings/media"),
-  ]);
-  return { rateLimit, uploads, chat, media };
+
+  const results = await Promise.all(
+    SECTIONS.map((s) => auroraRequest(creds, settingsPath(s))),
+  );
+  return Object.fromEntries(SECTIONS.map((s, i) => [s, results[i]]));
 }
 
 export async function runUpdateSettings(
@@ -90,13 +126,9 @@ export async function runUpdateSettings(
   if (!a.values || typeof a.values !== "object") {
     throw new Error("Parameter 'values' is required and must be an object.");
   }
-  // ownerId vai na query string — é onde o backend (ownerFilter) lê o escopo
-  // quando o ator é master. Sem ele, master grava o GLOBAL.
-  const qs =
-    a.ownerId && typeof a.ownerId === "string"
-      ? `?ownerId=${encodeURIComponent(a.ownerId)}`
-      : "";
-  return auroraRequest(creds, apiPath`/dashboard/settings/${a.section}` + qs, {
+  const aiId = typeof a.aiId === "string" ? a.aiId : undefined;
+  const ownerId = typeof a.ownerId === "string" ? a.ownerId : undefined;
+  return auroraRequest(creds, settingsPath(a.section, aiId, ownerId), {
     method: "PATCH",
     body: a.values,
   });

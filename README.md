@@ -59,7 +59,7 @@ Ou edite manualmente o `~/.claude.json`, seção `mcpServers`:
 
 Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**.
 
-## Tools disponíveis (86)
+## Tools disponíveis (127)
 
 | Categoria | Tools |
 |-----------|-------|
@@ -71,13 +71,19 @@ Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**
 | **Embeddings** | `list_embeddings`, `create_embedding`, `update_embedding`, `delete_embedding`, `delete_all_embeddings`, `get_embedding_stats` |
 | **Documents** | `list_documents`, `get_document`, `delete_document`, `upload_document` |
 | **UI Actions** | `list_ui_actions`, `get_ui_action`, `create_ui_action`, `update_ui_action`, `delete_ui_action`, `link_ui_action_to_ai`, `unlink_ui_action_from_ai`, `ui_action_stats` |
-| **MCP Servers** | `list_mcp_servers`, `get_mcp_server`, `create_mcp_server`, `update_mcp_server`, `delete_mcp_server`, `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
-| **Providers** | `list_providers`, `get_provider`, `create_provider`, `update_provider`, `delete_provider`, `test_provider` |
+| **MCP Servers** | `list_mcp_servers`, `get_mcp_server`, `create_mcp_server`, `update_mcp_server`, `delete_mcp_server`, `reinstall_mcp_server`, `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
+| **Providers (mensageria)** | `list_providers`, `get_provider`, `create_provider`, `update_provider`, `delete_provider`, `test_provider` |
+| **Providers de LLM** | `list_llm_providers`, `get_llm_provider`, `create_llm_provider`, `update_llm_provider`, `delete_llm_provider`, `test_llm_provider` |
+| **Providers de embedding** | `list_embedding_providers`, `get_embedding_provider`, `create_embedding_provider`, `update_embedding_provider`, `delete_embedding_provider`, `test_embedding_provider` |
+| **Model discovery** | `list_provider_models` |
 | **Scheduled Tasks** | `list_schedules`, `get_schedule`, `create_schedule`, `update_schedule`, `delete_schedule` |
-| **Usuários** | `list_users`, `get_user`, `create_user`, `update_user`, `delete_user`, `transfer_user_resources`, `get_me` |
+| **Usuários** | `list_users`, `get_user`, `create_user`, `update_user`, `delete_user`, `get_user_permissions`, `set_user_permissions`, `impersonate_user`, `transfer_user_resources`, `get_me` |
 | **Roles** | `list_roles`, `list_permissions`, `create_role`, `update_role_permissions`, `delete_role` |
+| **Planos & assinaturas** | `get_my_plan`, `list_plans`, `create_plan`, `update_plan`, `deactivate_plan`, `get_plan_limits`, `update_plan_limits`, `get_owner_subscription`, `assign_subscription`, `cancel_subscription`, `list_subscriptions`, `subscriptions_trend`, `renew_subscription`, `subscription_history` |
+| **Documentos gerados** | `list_generated_docs`, `generated_docs_stats`, `get_generated_doc`, `get_generated_doc_url`, `download_generated_doc`, `save_generated_doc`, `delete_generated_doc` |
+| **WhatsApp** | `whatsapp_info`, `whatsapp_connect`, `whatsapp_disconnect` |
 | **Settings** | `get_settings`, `update_settings` |
-| **Audit** | `list_audit` |
+| **Audit & Erros** | `list_audit`, `list_error_logs` |
 | **Token Usage** | `token_usage` |
 | **Webhook Inspector** | `read_webhook_inspector`, `clear_webhook_inspector` |
 | **Status** | `get_status` |

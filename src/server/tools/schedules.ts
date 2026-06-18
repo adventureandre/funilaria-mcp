@@ -22,8 +22,9 @@ export const LIST_SCHEDULES_TOOL = {
   inputSchema: {
     type: "object" as const,
     properties: {
+      page: { type: "number", description: "Page number (default 1)." },
       limit: { type: "number", description: "Number of tasks per page (default 20, max 100)." },
-      offset: { type: "number", description: "Number of tasks to skip for pagination (default 0)." },
+      search: { type: "string", description: "Filter by title (case-insensitive)." },
     },
     additionalProperties: false,
   },
@@ -121,9 +122,12 @@ export const DELETE_SCHEDULE_TOOL = {
 
 async function runListSchedules(creds: Credentials, args: unknown): Promise<SchedulesListResponse> {
   const a = (args ?? {}) as Record<string, unknown>;
-  const limit = typeof a.limit === "number" ? a.limit : 20;
-  const offset = typeof a.offset === "number" ? a.offset : 0;
-  return auroraRequest(creds, apiPath`/dashboard/schedules?limit=${limit}&offset=${offset}`);
+  const params = new URLSearchParams();
+  if (typeof a.page === "number") params.set("page", String(a.page));
+  if (typeof a.limit === "number") params.set("limit", String(a.limit));
+  if (a.search && typeof a.search === "string") params.set("search", a.search);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return auroraRequest(creds, `/dashboard/schedules${qs}`);
 }
 
 async function runGetSchedule(creds: Credentials, args: unknown): Promise<SchedulesGetResponse> {
