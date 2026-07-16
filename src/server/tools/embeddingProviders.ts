@@ -46,7 +46,7 @@ export const CREATE_EMBEDDING_PROVIDER_TOOL = {
         enum: ["openai", "gemini"],
         description: "Adapter protocol. openai covers OpenAI and OpenAI-compatible endpoints.",
       },
-      model: { type: "string", description: "Embedding model (e.g. text-embedding-3-small, text-embedding-004)." },
+      model: { type: "string", description: "Embedding model (e.g. text-embedding-3-small, gemini-embedding-001)." },
       dimension: { type: "integer", enum: [1536, 768], description: "Vector dimension. Must match a supported pgvector column." },
       baseUrl: { type: "string", description: "Endpoint base URL. Empty = SDK default." },
       apiKey: { type: "string", description: "API key for the endpoint." },
