@@ -173,7 +173,7 @@ import { LIST_RECENT_CONVERSATIONS_TOOL, runListRecentConversations } from "./to
 import { GET_EMBEDDING_STATS_TOOL, runGetEmbeddingStats } from "./tools/embeddingStats.js";
 import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
 import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
-import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources } from "./tools/transferUser.js";
+import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources, TRANSFER_AIS_TOOL, runTransferAis } from "./tools/transferUser.js";
 import {
   LIST_SCHEDULES_TOOL, runListSchedules,
   GET_SCHEDULE_TOOL, runGetSchedule,
@@ -355,6 +355,7 @@ const ALL_TOOLS = [
   UPLOAD_DOCUMENT_TOOL,
   UPLOAD_SKILL_FILE_TOOL,
   TRANSFER_USER_RESOURCES_TOOL,
+  TRANSFER_AIS_TOOL,
   // Schedules
   LIST_SCHEDULES_TOOL,
   GET_SCHEDULE_TOOL,
@@ -488,6 +489,7 @@ const HANDLERS: Record<string, ToolHandler> = {
   [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
   [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
   [TRANSFER_USER_RESOURCES_TOOL.name]: runTransferUserResources,
+  [TRANSFER_AIS_TOOL.name]: runTransferAis,
   [LIST_SCHEDULES_TOOL.name]: runListSchedules,
   [GET_SCHEDULE_TOOL.name]: runGetSchedule,
   [CREATE_SCHEDULE_TOOL.name]: runCreateSchedule,
