@@ -42,6 +42,11 @@ export const UPDATE_AI_TOOL = {
       availableForDelegation: { type: "boolean" },
       canShareEmbeddings: { type: "boolean" },
       canGenerateDocuments: { type: "boolean" },
+      chatCommandsEnabled: {
+        type: "boolean",
+        description:
+          "Master switch for chat commands (/name). Off by default: with it off, a leading slash is plain text everywhere. Which actions become commands is decided per link — see update_ui_action_link.",
+      },
       handoffEnabled: { type: "boolean" },
       handoffCategories: { type: "array", items: { type: "string" } },
       handoffPromptHint: { type: "string" },
