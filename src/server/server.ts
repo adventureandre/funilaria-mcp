@@ -14,6 +14,10 @@ import {
   AuthenticationRequiredError,
 } from "../auth/client.js";
 
+import {
+  fetchRemoteTools, callRemoteTool, mergeTools,
+  type RemoteTool,
+} from "./catalog/remoteCatalog.js";
 import { LIST_AIS_TOOL, runListAis } from "./tools/listAis.js";
 import { GET_AI_CONFIG_TOOL, runGetAiConfig } from "./tools/getAiConfig.js";
 import { CHAT_WITH_AI_TOOL, runChatWithAi } from "./tools/chatWithAi.js";
@@ -506,12 +510,40 @@ export async function startServer(): Promise<void> {
     { capabilities: { tools: {} } },
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: ALL_TOOLS,
-  }));
+  // Cache do catálogo por sessão: uma busca no primeiro tools/list. O editor
+  // reconecta com frequência, e uma ida ao backend por listagem seria ruído.
+  let remoteTools: RemoteTool[] | null = null;
+  let remoteNames = new Set<string>();
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    if (remoteTools === null) {
+      try {
+        const creds = await requireCredentials();
+        remoteTools = await fetchRemoteTools(creds);
+      } catch {
+        // Sem credencial ainda: segue com as locais e tenta de novo depois.
+        remoteTools = [];
+        return { tools: ALL_TOOLS };
+      }
+    }
+    const merged = mergeTools(ALL_TOOLS, remoteTools);
+    remoteNames = merged.remoteNames;
+    return { tools: merged.tools };
+  });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    // Tool servida pelo catálogo: executa pelo nome, o backend resolve a rota.
+    if (remoteNames.has(name)) {
+      try {
+        const creds = await requireCredentials();
+        return jsonContent(await callRemoteTool(creds, name, args));
+      } catch (err) {
+        return errorContent(err);
+      }
+    }
+
     const handler = HANDLERS[name];
     if (!handler) {
       return {

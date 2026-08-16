@@ -59,7 +59,17 @@ Ou edite manualmente o `~/.claude.json`, seção `mcpServers`:
 
 Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**.
 
-## Tools disponíveis (129)
+## Tools disponíveis
+
+A lista é **dinâmica**: no primeiro `tools/list` da sessão o cliente busca o
+catálogo em `GET /dashboard/mcp-catalog` do seu Aurora e registra o que vier de
+lá, junto das tools que ainda vivem neste pacote. Tool nova no backend aparece
+sem atualizar o pacote; em caso de nome repetido, a versão do catálogo vence.
+
+Se o backend estiver indisponível ou for uma versão antiga sem catálogo, o
+cliente segue apenas com as tools locais — a sessão degrada, não quebra.
+
+Os grupos abaixo refletem as tools locais desta versão.
 
 | Categoria | Tools |
 |-----------|-------|
