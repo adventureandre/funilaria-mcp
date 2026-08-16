@@ -36,26 +36,13 @@ import {
   UPDATE_SETTINGS_TOOL, runUpdateSettings,
 } from "./tools/settings.js";
 import {
-  LINK_UI_ACTION_TOOL, runLinkUiAction,
-  UNLINK_UI_ACTION_TOOL, runUnlinkUiAction,
   UI_ACTION_STATS_TOOL, runUiActionStats,
 } from "./tools/uiActions.js";
-import {
-  LINK_MCP_SERVER_TOOL, runLinkMcpServer,
-  UNLINK_MCP_SERVER_TOOL, runUnlinkMcpServer,
-} from "./tools/mcpServers.js";
 import {
   DOWNLOAD_GENERATED_DOC_TOOL, runDownloadGeneratedDoc,
 } from "./tools/generatedDocs.js";
 import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
 import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
-import {
-  LIST_SCHEDULES_TOOL, runListSchedules,
-  GET_SCHEDULE_TOOL, runGetSchedule,
-  CREATE_SCHEDULE_TOOL, runCreateSchedule,
-  UPDATE_SCHEDULE_TOOL, runUpdateSchedule,
-  DELETE_SCHEDULE_TOOL, runDeleteSchedule,
-} from "./tools/schedules.js";
 
 async function requireCredentials(): Promise<Credentials> {
   const creds = await loadCredentials();
@@ -102,12 +89,8 @@ const ALL_TOOLS = [
   LIST_EMBEDDINGS_TOOL,
   // Documents
   // UI Actions
-  LINK_UI_ACTION_TOOL,
-  UNLINK_UI_ACTION_TOOL,
   UI_ACTION_STATS_TOOL,
   // MCP Servers
-  LINK_MCP_SERVER_TOOL,
-  UNLINK_MCP_SERVER_TOOL,
   // Providers
   // Settings
   GET_SETTINGS_TOOL,
@@ -127,11 +110,6 @@ const ALL_TOOLS = [
   UPLOAD_DOCUMENT_TOOL,
   UPLOAD_SKILL_FILE_TOOL,
   // Schedules
-  LIST_SCHEDULES_TOOL,
-  GET_SCHEDULE_TOOL,
-  CREATE_SCHEDULE_TOOL,
-  UPDATE_SCHEDULE_TOOL,
-  DELETE_SCHEDULE_TOOL,
 ];
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
@@ -145,21 +123,12 @@ const HANDLERS: Record<string, ToolHandler> = {
   [IMPORT_SKILL_TOOL.name]: runImportSkill,
   [EXPORT_SKILL_TOOL.name]: runExportSkill,
   [LIST_EMBEDDINGS_TOOL.name]: runListEmbeddings,
-  [LINK_UI_ACTION_TOOL.name]: runLinkUiAction,
-  [UNLINK_UI_ACTION_TOOL.name]: runUnlinkUiAction,
   [UI_ACTION_STATS_TOOL.name]: runUiActionStats,
-  [LINK_MCP_SERVER_TOOL.name]: runLinkMcpServer,
-  [UNLINK_MCP_SERVER_TOOL.name]: runUnlinkMcpServer,
   [GET_SETTINGS_TOOL.name]: runGetSettings,
   [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
   [DOWNLOAD_GENERATED_DOC_TOOL.name]: runDownloadGeneratedDoc,
   [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
   [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
-  [LIST_SCHEDULES_TOOL.name]: runListSchedules,
-  [GET_SCHEDULE_TOOL.name]: runGetSchedule,
-  [CREATE_SCHEDULE_TOOL.name]: runCreateSchedule,
-  [UPDATE_SCHEDULE_TOOL.name]: runUpdateSchedule,
-  [DELETE_SCHEDULE_TOOL.name]: runDeleteSchedule,
 };
 
 export async function startServer(): Promise<void> {

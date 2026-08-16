@@ -63,8 +63,8 @@ Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**
 
 A lista é **dinâmica**: no primeiro `tools/list` da sessão o cliente busca o
 catálogo em `GET /dashboard/mcp-catalog` do seu Aurora e registra o que vier de
-lá, junto das 23 tools que ainda vivem neste pacote (uploads, downloads e as
-que combinam mais de uma chamada). Tool nova no backend aparece sem atualizar o
+lá, junto das 14 tools que ainda vivem neste pacote (uploads, downloads e as
+que combinam mais de uma chamada ou transformam a resposta). Tool nova no backend aparece sem atualizar o
 pacote; em caso de nome repetido, a versão do catálogo vence.
 
 > **A partir da 0.7.0 o backend precisa expor o catálogo.** As tools que antes
@@ -83,9 +83,7 @@ Os grupos abaixo refletem as tools locais desta versão.
 | **Skill Files** | `upload_skill_file` |
 | **Embeddings** | `list_embeddings` |
 | **Documents** | `upload_document` |
-| **UI Actions** | `link_ui_action_to_ai`, `unlink_ui_action_from_ai`, `ui_action_stats` |
-| **MCP Servers** | `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
-| **Scheduled Tasks** | `list_schedules`, `get_schedule`, `create_schedule`, `update_schedule`, `delete_schedule` |
+| **UI Actions** | `ui_action_stats` |
 | **Documentos gerados** | `download_generated_doc` |
 | **Settings** | `get_settings`, `update_settings` |
 
