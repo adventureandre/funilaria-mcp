@@ -70,6 +70,7 @@ export const UPDATE_LLM_PROVIDER_TOOL = {
       apiKey: { type: "string" },
       transcriptionModel: { type: "string" },
       isActive: { type: "boolean" },
+      ownerId: { type: "string", description: "Owner (master only)." },
     },
     required: ["id"],
     additionalProperties: false,

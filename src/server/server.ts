@@ -99,9 +99,47 @@ import {
   CREATE_MCP_SERVER_TOOL, runCreateMcpServer,
   UPDATE_MCP_SERVER_TOOL, runUpdateMcpServer,
   DELETE_MCP_SERVER_TOOL, runDeleteMcpServer,
+  REINSTALL_MCP_SERVER_TOOL, runReinstallMcpServer,
   LINK_MCP_SERVER_TOOL, runLinkMcpServer,
   UNLINK_MCP_SERVER_TOOL, runUnlinkMcpServer,
 } from "./tools/mcpServers.js";
+import {
+  GET_MY_PLAN_TOOL, runGetMyPlan,
+  LIST_PLANS_TOOL, runListPlans,
+  CREATE_PLAN_TOOL, runCreatePlan,
+  UPDATE_PLAN_TOOL, runUpdatePlan,
+  DEACTIVATE_PLAN_TOOL, runDeactivatePlan,
+  GET_PLAN_LIMITS_TOOL, runGetPlanLimits,
+  UPDATE_PLAN_LIMITS_TOOL, runUpdatePlanLimits,
+  GET_OWNER_SUBSCRIPTION_TOOL, runGetOwnerSubscription,
+  ASSIGN_SUBSCRIPTION_TOOL, runAssignSubscription,
+  CANCEL_SUBSCRIPTION_TOOL, runCancelSubscription,
+  LIST_SUBSCRIPTIONS_TOOL, runListSubscriptions,
+  SUBSCRIPTIONS_TREND_TOOL, runSubscriptionsTrend,
+  RENEW_SUBSCRIPTION_TOOL, runRenewSubscription,
+  SUBSCRIPTION_HISTORY_TOOL, runSubscriptionHistory,
+} from "./tools/plans.js";
+import {
+  LIST_GENERATED_DOCS_TOOL, runListGeneratedDocs,
+  GENERATED_DOCS_STATS_TOOL, runGeneratedDocsStats,
+  GET_GENERATED_DOC_TOOL, runGetGeneratedDoc,
+  GET_GENERATED_DOC_URL_TOOL, runGetGeneratedDocUrl,
+  DOWNLOAD_GENERATED_DOC_TOOL, runDownloadGeneratedDoc,
+  SAVE_GENERATED_DOC_TOOL, runSaveGeneratedDoc,
+  DELETE_GENERATED_DOC_TOOL, runDeleteGeneratedDoc,
+} from "./tools/generatedDocs.js";
+import {
+  WHATSAPP_INFO_TOOL, runWhatsappInfo,
+  WHATSAPP_CONNECT_TOOL, runWhatsappConnect,
+  WHATSAPP_DISCONNECT_TOOL, runWhatsappDisconnect,
+} from "./tools/whatsapp.js";
+import { LIST_ERROR_LOGS_TOOL, runListErrorLogs } from "./tools/errorLogs.js";
+import { LIST_PROVIDER_MODELS_TOOL, runListProviderModels } from "./tools/models.js";
+import {
+  GET_USER_PERMISSIONS_TOOL, runGetUserPermissions,
+  SET_USER_PERMISSIONS_TOOL, runSetUserPermissions,
+  IMPERSONATE_USER_TOOL, runImpersonateUser,
+} from "./tools/userPermissions.js";
 import {
   LIST_USERS_TOOL, runListUsers,
   GET_USER_TOOL, runGetUser,
@@ -133,11 +171,17 @@ import {
   GET_STATUS_TOOL, runGetStatus,
 } from "./tools/status.js";
 import { LIST_RECENT_CONVERSATIONS_TOOL, runListRecentConversations } from "./tools/recentConversations.js";
-import { GET_CHAT_HISTORY_TOOL, runGetChatHistory } from "./tools/chatHistory.js";
 import { GET_EMBEDDING_STATS_TOOL, runGetEmbeddingStats } from "./tools/embeddingStats.js";
 import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
 import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
-import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources } from "./tools/transferUser.js";
+import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources, TRANSFER_AIS_TOOL, runTransferAis } from "./tools/transferUser.js";
+import {
+  LIST_SCHEDULES_TOOL, runListSchedules,
+  GET_SCHEDULE_TOOL, runGetSchedule,
+  CREATE_SCHEDULE_TOOL, runCreateSchedule,
+  UPDATE_SCHEDULE_TOOL, runUpdateSchedule,
+  DELETE_SCHEDULE_TOOL, runDeleteSchedule,
+} from "./tools/schedules.js";
 
 async function requireCredentials(): Promise<Credentials> {
   const creds = await loadCredentials();
@@ -227,6 +271,7 @@ const ALL_TOOLS = [
   CREATE_MCP_SERVER_TOOL,
   UPDATE_MCP_SERVER_TOOL,
   DELETE_MCP_SERVER_TOOL,
+  REINSTALL_MCP_SERVER_TOOL,
   LINK_MCP_SERVER_TOOL,
   UNLINK_MCP_SERVER_TOOL,
   // Providers
@@ -257,12 +302,45 @@ const ALL_TOOLS = [
   CREATE_USER_TOOL,
   UPDATE_USER_TOOL,
   DELETE_USER_TOOL,
+  GET_USER_PERMISSIONS_TOOL,
+  SET_USER_PERMISSIONS_TOOL,
+  IMPERSONATE_USER_TOOL,
   // Roles & Permissions
   LIST_ROLES_TOOL,
   LIST_PERMISSIONS_TOOL,
   CREATE_ROLE_TOOL,
   UPDATE_ROLE_PERMISSIONS_TOOL,
   DELETE_ROLE_TOOL,
+  // Plans & Subscriptions
+  GET_MY_PLAN_TOOL,
+  LIST_PLANS_TOOL,
+  CREATE_PLAN_TOOL,
+  UPDATE_PLAN_TOOL,
+  DEACTIVATE_PLAN_TOOL,
+  GET_PLAN_LIMITS_TOOL,
+  UPDATE_PLAN_LIMITS_TOOL,
+  GET_OWNER_SUBSCRIPTION_TOOL,
+  ASSIGN_SUBSCRIPTION_TOOL,
+  CANCEL_SUBSCRIPTION_TOOL,
+  LIST_SUBSCRIPTIONS_TOOL,
+  SUBSCRIPTIONS_TREND_TOOL,
+  RENEW_SUBSCRIPTION_TOOL,
+  SUBSCRIPTION_HISTORY_TOOL,
+  // Generated Documents
+  LIST_GENERATED_DOCS_TOOL,
+  GENERATED_DOCS_STATS_TOOL,
+  GET_GENERATED_DOC_TOOL,
+  GET_GENERATED_DOC_URL_TOOL,
+  DOWNLOAD_GENERATED_DOC_TOOL,
+  SAVE_GENERATED_DOC_TOOL,
+  DELETE_GENERATED_DOC_TOOL,
+  // WhatsApp
+  WHATSAPP_INFO_TOOL,
+  WHATSAPP_CONNECT_TOOL,
+  WHATSAPP_DISCONNECT_TOOL,
+  // Error logs & model discovery
+  LIST_ERROR_LOGS_TOOL,
+  LIST_PROVIDER_MODELS_TOOL,
   // Auth & Status
   GET_ME_TOOL,
   GET_STATUS_TOOL,
@@ -275,11 +353,17 @@ const ALL_TOOLS = [
   TOKEN_USAGE_TOOL,
   // Extra
   LIST_RECENT_CONVERSATIONS_TOOL,
-  GET_CHAT_HISTORY_TOOL,
   GET_EMBEDDING_STATS_TOOL,
   UPLOAD_DOCUMENT_TOOL,
   UPLOAD_SKILL_FILE_TOOL,
   TRANSFER_USER_RESOURCES_TOOL,
+  TRANSFER_AIS_TOOL,
+  // Schedules
+  LIST_SCHEDULES_TOOL,
+  GET_SCHEDULE_TOOL,
+  CREATE_SCHEDULE_TOOL,
+  UPDATE_SCHEDULE_TOOL,
+  DELETE_SCHEDULE_TOOL,
 ];
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
@@ -335,6 +419,7 @@ const HANDLERS: Record<string, ToolHandler> = {
   [CREATE_MCP_SERVER_TOOL.name]: runCreateMcpServer,
   [UPDATE_MCP_SERVER_TOOL.name]: runUpdateMcpServer,
   [DELETE_MCP_SERVER_TOOL.name]: runDeleteMcpServer,
+  [REINSTALL_MCP_SERVER_TOOL.name]: runReinstallMcpServer,
   [LINK_MCP_SERVER_TOOL.name]: runLinkMcpServer,
   [UNLINK_MCP_SERVER_TOOL.name]: runUnlinkMcpServer,
   [LIST_PROVIDERS_TOOL.name]: (_c) => runListProviders(_c),
@@ -362,11 +447,40 @@ const HANDLERS: Record<string, ToolHandler> = {
   [CREATE_USER_TOOL.name]: runCreateUser,
   [UPDATE_USER_TOOL.name]: runUpdateUser,
   [DELETE_USER_TOOL.name]: runDeleteUser,
+  [GET_USER_PERMISSIONS_TOOL.name]: runGetUserPermissions,
+  [SET_USER_PERMISSIONS_TOOL.name]: runSetUserPermissions,
+  [IMPERSONATE_USER_TOOL.name]: runImpersonateUser,
   [LIST_ROLES_TOOL.name]: (_c) => runListRoles(_c),
   [LIST_PERMISSIONS_TOOL.name]: (_c) => runListPermissions(_c),
   [CREATE_ROLE_TOOL.name]: runCreateRole,
   [UPDATE_ROLE_PERMISSIONS_TOOL.name]: runUpdateRolePermissions,
   [DELETE_ROLE_TOOL.name]: runDeleteRole,
+  [GET_MY_PLAN_TOOL.name]: (_c) => runGetMyPlan(_c),
+  [LIST_PLANS_TOOL.name]: (_c) => runListPlans(_c),
+  [CREATE_PLAN_TOOL.name]: runCreatePlan,
+  [UPDATE_PLAN_TOOL.name]: runUpdatePlan,
+  [DEACTIVATE_PLAN_TOOL.name]: runDeactivatePlan,
+  [GET_PLAN_LIMITS_TOOL.name]: runGetPlanLimits,
+  [UPDATE_PLAN_LIMITS_TOOL.name]: runUpdatePlanLimits,
+  [GET_OWNER_SUBSCRIPTION_TOOL.name]: runGetOwnerSubscription,
+  [ASSIGN_SUBSCRIPTION_TOOL.name]: runAssignSubscription,
+  [CANCEL_SUBSCRIPTION_TOOL.name]: runCancelSubscription,
+  [LIST_SUBSCRIPTIONS_TOOL.name]: runListSubscriptions,
+  [SUBSCRIPTIONS_TREND_TOOL.name]: runSubscriptionsTrend,
+  [RENEW_SUBSCRIPTION_TOOL.name]: runRenewSubscription,
+  [SUBSCRIPTION_HISTORY_TOOL.name]: runSubscriptionHistory,
+  [LIST_GENERATED_DOCS_TOOL.name]: runListGeneratedDocs,
+  [GENERATED_DOCS_STATS_TOOL.name]: runGeneratedDocsStats,
+  [GET_GENERATED_DOC_TOOL.name]: runGetGeneratedDoc,
+  [GET_GENERATED_DOC_URL_TOOL.name]: runGetGeneratedDocUrl,
+  [DOWNLOAD_GENERATED_DOC_TOOL.name]: runDownloadGeneratedDoc,
+  [SAVE_GENERATED_DOC_TOOL.name]: runSaveGeneratedDoc,
+  [DELETE_GENERATED_DOC_TOOL.name]: runDeleteGeneratedDoc,
+  [WHATSAPP_INFO_TOOL.name]: runWhatsappInfo,
+  [WHATSAPP_CONNECT_TOOL.name]: runWhatsappConnect,
+  [WHATSAPP_DISCONNECT_TOOL.name]: runWhatsappDisconnect,
+  [LIST_ERROR_LOGS_TOOL.name]: runListErrorLogs,
+  [LIST_PROVIDER_MODELS_TOOL.name]: runListProviderModels,
   [GET_ME_TOOL.name]: (_c) => runGetMe(_c),
   [GET_STATUS_TOOL.name]: (_c) => runGetStatus(_c),
   [LIST_AUDIT_TOOL.name]: runListAudit,
@@ -374,11 +488,16 @@ const HANDLERS: Record<string, ToolHandler> = {
   [CLEAR_WEBHOOK_INSPECTOR_TOOL.name]: runClearWebhookInspector,
   [TOKEN_USAGE_TOOL.name]: (_c) => runTokenUsage(_c),
   [LIST_RECENT_CONVERSATIONS_TOOL.name]: runListRecentConversations,
-  [GET_CHAT_HISTORY_TOOL.name]: runGetChatHistory,
   [GET_EMBEDDING_STATS_TOOL.name]: runGetEmbeddingStats,
   [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
   [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
   [TRANSFER_USER_RESOURCES_TOOL.name]: runTransferUserResources,
+  [TRANSFER_AIS_TOOL.name]: runTransferAis,
+  [LIST_SCHEDULES_TOOL.name]: runListSchedules,
+  [GET_SCHEDULE_TOOL.name]: runGetSchedule,
+  [CREATE_SCHEDULE_TOOL.name]: runCreateSchedule,
+  [UPDATE_SCHEDULE_TOOL.name]: runUpdateSchedule,
+  [DELETE_SCHEDULE_TOOL.name]: runDeleteSchedule,
 };
 
 export async function startServer(): Promise<void> {

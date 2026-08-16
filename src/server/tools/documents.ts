@@ -10,6 +10,11 @@ export const LIST_DOCUMENTS_TOOL = {
     type: "object" as const,
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
+      purpose: {
+        type: "string",
+        enum: ["rag", "prompt"],
+        description: "Filter by document purpose.",
+      },
     },
     required: ["aiId"],
     additionalProperties: false,
@@ -52,7 +57,11 @@ export async function runListDocuments(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
-  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/documents`);
+  const qs =
+    a.purpose && typeof a.purpose === "string"
+      ? `?purpose=${encodeURIComponent(a.purpose)}`
+      : "";
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/documents` + qs);
 }
 
 export async function runGetDocument(

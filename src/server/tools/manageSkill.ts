@@ -1,4 +1,4 @@
-import { auroraRequest, apiPath } from "../../auth/client.js";
+import { auroraRequest, auroraUpload, apiPath } from "../../auth/client.js";
 import type { Credentials } from "../../auth/credentials.js";
 
 export const CREATE_SKILL_TOOL = {
@@ -11,14 +11,24 @@ export const CREATE_SKILL_TOOL = {
     type: "object" as const,
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
-      name: { type: "string", description: "Unique skill name/slug." },
-      displayName: { type: "string", description: "Human-friendly name." },
+      name: {
+        type: "string",
+        description: "Unique skill slug, kebab-case (^[a-z][a-z0-9-]{1,63}$).",
+      },
       description: { type: "string", description: "What the skill does." },
       instructions: { type: "string", description: "The skill's instruction content/body." },
-      triggerType: { type: "string", description: "How the skill is triggered (e.g. 'manual', 'auto')." },
-      triggerCondition: { type: "string", description: "Condition expression for auto trigger." },
+      parametersSchema: {
+        type: "object",
+        description: "Optional JSON Schema for the skill's parameters.",
+        additionalProperties: true,
+      },
+      status: {
+        type: "string",
+        enum: ["PENDING", "ACTIVE", "REJECTED"],
+        description: "Initial status (default ACTIVE).",
+      },
     },
-    required: ["aiId", "name", "displayName", "description", "instructions"],
+    required: ["aiId", "name", "description", "instructions"],
     additionalProperties: false,
   },
 } as const;
@@ -27,17 +37,20 @@ export const UPDATE_SKILL_TOOL = {
   name: "update_skill",
   title: "Update a skill",
   description:
-    "Updates an existing skill's configuration. Pass only the fields you want to change.",
+    "Updates an existing skill. Pass only the fields you want to change. " +
+    "Note: `name` and `status` are not editable here (use approve/reject for status).",
   inputSchema: {
     type: "object" as const,
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
       id: { type: "string", description: "The skill's ID." },
-      displayName: { type: "string" },
       description: { type: "string" },
       instructions: { type: "string" },
-      triggerType: { type: "string" },
-      triggerCondition: { type: "string" },
+      parametersSchema: {
+        type: "object",
+        description: "JSON Schema for the skill's parameters.",
+        additionalProperties: true,
+      },
     },
     required: ["aiId", "id"],
     additionalProperties: false,
@@ -77,14 +90,17 @@ export const DELETE_SKILL_TOOL = {
 export const IMPORT_SKILL_TOOL = {
   name: "import_skill",
   title: "Import a skill",
-  description: "Imports a skill from an exported payload into an AI.",
+  description:
+    "Imports a skill into an AI from an exported ZIP (as produced by export_skill). " +
+    "Pass the ZIP bytes as base64.",
   inputSchema: {
     type: "object" as const,
     properties: {
       aiId: { type: "string", description: "The AI's ID." },
-      data: { type: "object", description: "The exported skill data to import.", additionalProperties: true },
+      zipBase64: { type: "string", description: "The skill ZIP file content, base64-encoded." },
+      filename: { type: "string", description: "Filename for the upload (default 'skill.zip')." },
     },
-    required: ["aiId", "data"],
+    required: ["aiId", "zipBase64"],
     additionalProperties: false,
   },
 } as const;
@@ -92,7 +108,8 @@ export const IMPORT_SKILL_TOOL = {
 export const EXPORT_SKILL_TOOL = {
   name: "export_skill",
   title: "Export a skill",
-  description: "Exports a skill as a portable payload that can be imported elsewhere.",
+  description:
+    "Exports a skill as a portable ZIP. Returns `{ contentType, base64 }` — the ZIP bytes are base64-encoded.",
   inputSchema: {
     type: "object" as const,
     properties: {
@@ -137,16 +154,16 @@ export const REJECT_SKILL_TOOL = {
 
 export const MOVE_SKILL_TOOL = {
   name: "move_skill",
-  title: "Move/reorder a skill",
-  description: "Changes the position/order of a skill within an AI.",
+  title: "Move a skill to another AI",
+  description: "Moves a skill from its current AI to a different AI (same owner).",
   inputSchema: {
     type: "object" as const,
     properties: {
-      aiId: { type: "string", description: "The AI's ID." },
+      aiId: { type: "string", description: "The skill's current AI ID." },
       id: { type: "string", description: "The skill's ID." },
-      position: { type: "integer", description: "New position index." },
+      targetAiId: { type: "string", description: "The destination AI ID (must belong to the same owner)." },
     },
-    required: ["aiId", "id", "position"],
+    required: ["aiId", "id", "targetAiId"],
     additionalProperties: false,
   },
 } as const;
@@ -210,11 +227,17 @@ export async function runImportSkill(
 ): Promise<unknown> {
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
-  if (!a.data || typeof a.data !== "object") throw new Error("Parameter 'data' is required.");
-  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/import`, {
-    method: "POST",
-    body: a.data,
-  });
+  if (!a.zipBase64 || typeof a.zipBase64 !== "string")
+    throw new Error("Parameter 'zipBase64' is required.");
+
+  const filename =
+    a.filename && typeof a.filename === "string" ? a.filename : "skill.zip";
+  const bytes = Buffer.from(a.zipBase64, "base64");
+  const blob = new Blob([bytes], { type: "application/zip" });
+  const formData = new FormData();
+  formData.append("file", blob, filename);
+
+  return auroraUpload(creds, apiPath`/dashboard/ia/${a.aiId}/skills/import`, formData);
 }
 
 export async function runExportSkill(
@@ -224,7 +247,10 @@ export async function runExportSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/export`);
+  // Resposta é um ZIP binário — não passar por JSON.parse.
+  return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/export`, {
+    responseType: "binary",
+  });
 }
 
 export async function runApproveSkill(
@@ -259,9 +285,9 @@ export async function runMoveSkill(
   const a = (args ?? {}) as Record<string, unknown>;
   if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
-  if (a.position === undefined || typeof a.position !== "number") throw new Error("Parameter 'position' is required.");
+  if (!a.targetAiId || typeof a.targetAiId !== "string") throw new Error("Parameter 'targetAiId' is required.");
   return auroraRequest(creds, apiPath`/dashboard/ia/${a.aiId}/skills/${a.id}/move`, {
     method: "POST",
-    body: { position: a.position },
+    body: { targetAiId: a.targetAiId },
   });
 }

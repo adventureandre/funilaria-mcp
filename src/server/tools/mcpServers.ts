@@ -51,6 +51,7 @@ export const CREATE_MCP_SERVER_TOOL = {
       gitUrl: { type: "string", description: "Source repo URL." },
       version: { type: "string" },
       timeout: { type: "integer", description: "Timeout in ms (default 30000)." },
+      ownerId: { type: "string", description: "Owner (master only)." },
     },
     required: ["name", "displayName", "command"],
     additionalProperties: false,
@@ -75,6 +76,23 @@ export const UPDATE_MCP_SERVER_TOOL = {
       version: { type: "string" },
       timeout: { type: "integer" },
       isActive: { type: "boolean" },
+      ownerId: { type: "string", description: "Owner (master only)." },
+    },
+    required: ["id"],
+    additionalProperties: false,
+  },
+} as const;
+
+export const REINSTALL_MCP_SERVER_TOOL = {
+  name: "reinstall_mcp_server",
+  title: "Reinstall MCP Server",
+  description:
+    "Reinstalls a MCP server from its gitUrl (re-clones/rebuilds) and reconnects linked AIs " +
+    "without a full restart.",
+  inputSchema: {
+    type: "object" as const,
+    properties: {
+      id: { type: "string", description: "The MCP server's ID." },
     },
     required: ["id"],
     additionalProperties: false,
@@ -175,6 +193,15 @@ export async function runDeleteMcpServer(
   if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
   await auroraRequest(creds, apiPath`/dashboard/mcp/${a.id}`, { method: "DELETE" });
   return { deleted: true };
+}
+
+export async function runReinstallMcpServer(
+  creds: Credentials,
+  args: unknown,
+): Promise<unknown> {
+  const a = (args ?? {}) as Record<string, unknown>;
+  if (!a.id || typeof a.id !== "string") throw new Error("Parameter 'id' is required.");
+  return auroraRequest(creds, apiPath`/dashboard/mcp/${a.id}/reinstall`, { method: "POST" });
 }
 
 export async function runLinkMcpServer(
