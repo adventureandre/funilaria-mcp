@@ -89,6 +89,7 @@ import {
   UPDATE_UI_ACTION_TOOL, runUpdateUiAction,
   DELETE_UI_ACTION_TOOL, runDeleteUiAction,
   LINK_UI_ACTION_TOOL, runLinkUiAction,
+  UPDATE_UI_ACTION_LINK_TOOL, runUpdateUiActionLink,
   UNLINK_UI_ACTION_TOOL, runUnlinkUiAction,
   UI_ACTION_STATS_TOOL, runUiActionStats,
 } from "./tools/uiActions.js";
@@ -261,6 +262,7 @@ const ALL_TOOLS = [
   UPDATE_UI_ACTION_TOOL,
   DELETE_UI_ACTION_TOOL,
   LINK_UI_ACTION_TOOL,
+  UPDATE_UI_ACTION_LINK_TOOL,
   UNLINK_UI_ACTION_TOOL,
   UI_ACTION_STATS_TOOL,
   // MCP Servers
@@ -409,6 +411,7 @@ const HANDLERS: Record<string, ToolHandler> = {
   [UPDATE_UI_ACTION_TOOL.name]: runUpdateUiAction,
   [DELETE_UI_ACTION_TOOL.name]: runDeleteUiAction,
   [LINK_UI_ACTION_TOOL.name]: runLinkUiAction,
+  [UPDATE_UI_ACTION_LINK_TOOL.name]: runUpdateUiActionLink,
   [UNLINK_UI_ACTION_TOOL.name]: runUnlinkUiAction,
   [UI_ACTION_STATS_TOOL.name]: runUiActionStats,
   [LIST_MCP_SERVERS_TOOL.name]: runListMcpServers,

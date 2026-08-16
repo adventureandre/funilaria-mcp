@@ -111,6 +111,36 @@ export const LINK_UI_ACTION_TOOL = {
       customDescription: { type: "string", description: "Override description for this AI." },
       isEnabled: { type: "boolean", description: "Whether the link is active (default true)." },
       rateLimit: { type: "integer", description: "Max invocations per minute for this link." },
+      commandExposure: {
+        type: "string",
+        enum: ["NONE", "DASHBOARD", "PUBLIC"],
+        description:
+          "Exposes this action as a chat command (/name). NONE (default) = not a command; DASHBOARD = panel operators only; PUBLIC = also the public API and chat widget. Requires chatCommandsEnabled on the AI.",
+      },
+    },
+    required: ["aiId", "uiActionId"],
+    additionalProperties: false,
+  },
+} as const;
+
+export const UPDATE_UI_ACTION_LINK_TOOL = {
+  name: "update_ui_action_link",
+  title: "Update UI Action Link",
+  description:
+    "Updates an existing AI/UI Action link without recreating it — use it to change how the action is exposed as a chat command, toggle it, or override its description.",
+  inputSchema: {
+    type: "object" as const,
+    properties: {
+      aiId: { type: "string", description: "The AI's ID." },
+      uiActionId: { type: "string", description: "The UI Action's ID." },
+      commandExposure: {
+        type: "string",
+        enum: ["NONE", "DASHBOARD", "PUBLIC"],
+        description:
+          "Exposes this action as a chat command (/name). NONE = not a command; DASHBOARD = panel operators only; PUBLIC = also the public API and chat widget.",
+      },
+      isEnabled: { type: "boolean", description: "Whether the link is active." },
+      customDescription: { type: "string", description: "Override description for this AI." },
     },
     required: ["aiId", "uiActionId"],
     additionalProperties: false,
@@ -217,6 +247,20 @@ export async function runLinkUiAction(
   const { aiId, uiActionId, ...body } = a;
   return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/ui-actions/${uiActionId}`, {
     method: "POST",
+    body,
+  });
+}
+
+export async function runUpdateUiActionLink(
+  creds: Credentials,
+  args: unknown,
+): Promise<unknown> {
+  const a = (args ?? {}) as Record<string, unknown>;
+  if (!a.aiId || typeof a.aiId !== "string") throw new Error("Parameter 'aiId' is required.");
+  if (!a.uiActionId || typeof a.uiActionId !== "string") throw new Error("Parameter 'uiActionId' is required.");
+  const { aiId, uiActionId, ...body } = a;
+  return auroraRequest(creds, apiPath`/dashboard/ia/${aiId}/ui-actions/${uiActionId}`, {
+    method: "PATCH",
     body,
   });
 }

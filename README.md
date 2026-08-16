@@ -59,7 +59,7 @@ Ou edite manualmente o `~/.claude.json`, seção `mcpServers`:
 
 Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**.
 
-## Tools disponíveis (127)
+## Tools disponíveis (129)
 
 | Categoria | Tools |
 |-----------|-------|
@@ -70,7 +70,7 @@ Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**
 | **Skill Files** | `list_skill_files`, `get_skill_file`, `create_skill_file`, `update_skill_file`, `delete_skill_file`, `upload_skill_file` |
 | **Embeddings** | `list_embeddings`, `create_embedding`, `update_embedding`, `delete_embedding`, `delete_all_embeddings`, `get_embedding_stats` |
 | **Documents** | `list_documents`, `get_document`, `delete_document`, `upload_document` |
-| **UI Actions** | `list_ui_actions`, `get_ui_action`, `create_ui_action`, `update_ui_action`, `delete_ui_action`, `link_ui_action_to_ai`, `unlink_ui_action_from_ai`, `ui_action_stats` |
+| **UI Actions** | `list_ui_actions`, `get_ui_action`, `create_ui_action`, `update_ui_action`, `delete_ui_action`, `link_ui_action_to_ai`, `update_ui_action_link`, `unlink_ui_action_from_ai`, `ui_action_stats` |
 | **MCP Servers** | `list_mcp_servers`, `get_mcp_server`, `create_mcp_server`, `update_mcp_server`, `delete_mcp_server`, `reinstall_mcp_server`, `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
 | **Providers (mensageria)** | `list_providers`, `get_provider`, `create_provider`, `update_provider`, `delete_provider`, `test_provider` |
 | **Providers de LLM** | `list_llm_providers`, `get_llm_provider`, `create_llm_provider`, `update_llm_provider`, `delete_llm_provider`, `test_llm_provider` |

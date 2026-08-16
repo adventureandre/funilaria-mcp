@@ -56,6 +56,11 @@ export const UPDATE_AI_TOOL = {
       canShareEmbeddings: { type: "boolean" },
       canGenerateDocuments: { type: "boolean" },
       canSendWhatsApp: { type: "boolean" },
+      chatCommandsEnabled: {
+        type: "boolean",
+        description:
+          "Master switch for chat commands (/name). Off by default: with it off, a leading slash is plain text everywhere. Which actions become commands is decided per link — see update_ui_action_link.",
+      },
       delegationAIIds: { type: "array", items: { type: "string" }, description: "Target AI IDs this AI may delegate to (requires canDelegateToOtherAIs)." },
       sharedEmbeddingsAIIds: { type: "array", items: { type: "string" }, description: "AI IDs (same owner) this AI shares embeddings with (requires canShareEmbeddings)." },
       handoffEnabled: { type: "boolean" },
