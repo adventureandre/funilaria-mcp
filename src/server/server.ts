@@ -168,30 +168,33 @@ export async function startServer(): Promise<void> {
     { capabilities: { tools: {} } },
   );
 
-  // Cache do catálogo por sessão: uma busca no primeiro tools/list. O editor
-  // reconecta com frequência, e uma ida ao backend por listagem seria ruído.
-  let remoteTools: RemoteTool[] | null = null;
-  let catalogoOk = true;
-  let remoteNames = new Set<string>();
+  // Catálogo carregado uma vez por sessão e COMPARTILHADO entre tools/list e
+  // tools/call. Guardar a promessa (em vez do resultado) resolve a corrida: um
+  // call que chegue junto do list espera a mesma busca terminar, em vez de
+  // concluir que a tool não existe.
+  let catalogo: Promise<{ ok: boolean; tools: RemoteTool[] }> | null = null;
+
+  async function carregarCatalogo(): Promise<{ ok: boolean; tools: RemoteTool[] }> {
+    if (!catalogo) {
+      catalogo = (async () => {
+        try {
+          const creds = await requireCredentials();
+          return await fetchRemoteTools(creds);
+        } catch {
+          // Sem credencial ainda: não memoriza, para tentar de novo depois do
+          // login. Não é falha do catálogo — nada de sentinela.
+          catalogo = null;
+          return { ok: true, tools: [] };
+        }
+      })();
+    }
+    return catalogo;
+  }
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    if (remoteTools === null) {
-      try {
-        const creds = await requireCredentials();
-        const res = await fetchRemoteTools(creds);
-        remoteTools = res.tools;
-        catalogoOk = res.ok;
-      } catch {
-        // Sem credencial ainda: nova tentativa no próximo tools/list, depois
-        // do login. Não é falha do catálogo, então não mostra a sentinela.
-        return { tools: ALL_TOOLS };
-      }
-    }
-    const merged = mergeTools(ALL_TOOLS, remoteTools);
-    remoteNames = merged.remoteNames;
-    return {
-      tools: catalogoOk ? merged.tools : [...merged.tools, CATALOG_UNAVAILABLE_TOOL],
-    };
+    const { ok, tools: remotas } = await carregarCatalogo();
+    const merged = mergeTools(ALL_TOOLS, remotas);
+    return { tools: ok ? merged.tools : [...merged.tools, CATALOG_UNAVAILABLE_TOOL] };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -202,7 +205,10 @@ export async function startServer(): Promise<void> {
     }
 
     // Tool servida pelo catálogo: executa pelo nome, o backend resolve a rota.
-    if (remoteNames.has(name)) {
+    // Consulta o catálogo (esperando a carga em andamento, se houver) antes de
+    // cair no "unknown tool".
+    const { tools: remotas } = await carregarCatalogo();
+    if (remotas.some((t) => t.name === name)) {
       try {
         const creds = await requireCredentials();
         return jsonContent(await callRemoteTool(creds, name, args));
