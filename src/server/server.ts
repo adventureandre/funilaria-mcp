@@ -16,169 +16,39 @@ import {
 
 import {
   fetchRemoteTools, callRemoteTool, mergeTools,
+  CATALOG_UNAVAILABLE_TOOL,
   type RemoteTool,
 } from "./catalog/remoteCatalog.js";
 import { LIST_AIS_TOOL, runListAis } from "./tools/listAis.js";
 import { GET_AI_CONFIG_TOOL, runGetAiConfig } from "./tools/getAiConfig.js";
-import { CHAT_WITH_AI_TOOL, runChatWithAi } from "./tools/chatWithAi.js";
-import { CREATE_AI_TOOL, runCreateAi } from "./tools/createAi.js";
-import { UPDATE_AI_TOOL, runUpdateAi } from "./tools/updateAi.js";
-import { DELETE_AI_TOOL, runDeleteAi } from "./tools/deleteAi.js";
 import { LIST_CONVERSATIONS_TOOL, runListConversations } from "./tools/listConversations.js";
-import { GET_CONVERSATION_TOOL, runGetConversation } from "./tools/getConversation.js";
 import { DELETE_CONVERSATION_TOOL, runDeleteConversation } from "./tools/deleteConversation.js";
-import {
-  GET_CONVERSATION_STATUS_TOOL, runGetConversationStatus,
-  RESUME_CONVERSATION_TOOL, runResumeConversation,
-  CLOSE_CONVERSATION_TOOL, runCloseConversation,
-  HANDOFF_ACK_TOOL, runHandoffAck,
-} from "./tools/conversationStatus.js";
 import { LIST_SKILLS_TOOL, runListSkills } from "./tools/listSkills.js";
 import {
-  CREATE_SKILL_TOOL, runCreateSkill,
-  UPDATE_SKILL_TOOL, runUpdateSkill,
-  GET_SKILL_TOOL, runGetSkill,
-  DELETE_SKILL_TOOL, runDeleteSkill,
   IMPORT_SKILL_TOOL, runImportSkill,
   EXPORT_SKILL_TOOL, runExportSkill,
-  APPROVE_SKILL_TOOL, runApproveSkill,
-  REJECT_SKILL_TOOL, runRejectSkill,
-  MOVE_SKILL_TOOL, runMoveSkill,
 } from "./tools/manageSkill.js";
 import {
   LIST_EMBEDDINGS_TOOL, runListEmbeddings,
-  CREATE_EMBEDDING_TOOL, runCreateEmbedding,
-  UPDATE_EMBEDDING_TOOL, runUpdateEmbedding,
-  DELETE_EMBEDDING_TOOL, runDeleteEmbedding,
-  DELETE_ALL_EMBEDDINGS_TOOL, runDeleteAllEmbeddings,
 } from "./tools/embeddings.js";
-import {
-  LIST_DOCUMENTS_TOOL, runListDocuments,
-  GET_DOCUMENT_TOOL, runGetDocument,
-  DELETE_DOCUMENT_TOOL, runDeleteDocument,
-} from "./tools/documents.js";
-import { TOKEN_USAGE_TOOL, runTokenUsage } from "./tools/tokenUsage.js";
-import {
-  LIST_PROVIDERS_TOOL, runListProviders,
-  TEST_PROVIDER_TOOL, runTestProvider,
-  GET_PROVIDER_TOOL, runGetProvider,
-  CREATE_PROVIDER_TOOL, runCreateProvider,
-  UPDATE_PROVIDER_TOOL, runUpdateProvider,
-  DELETE_PROVIDER_TOOL, runDeleteProvider,
-} from "./tools/providers.js";
-import {
-  LIST_LLM_PROVIDERS_TOOL, runListLlmProviders,
-  GET_LLM_PROVIDER_TOOL, runGetLlmProvider,
-  CREATE_LLM_PROVIDER_TOOL, runCreateLlmProvider,
-  UPDATE_LLM_PROVIDER_TOOL, runUpdateLlmProvider,
-  DELETE_LLM_PROVIDER_TOOL, runDeleteLlmProvider,
-  TEST_LLM_PROVIDER_TOOL, runTestLlmProvider,
-} from "./tools/llmProviders.js";
-import {
-  LIST_EMBEDDING_PROVIDERS_TOOL, runListEmbeddingProviders,
-  GET_EMBEDDING_PROVIDER_TOOL, runGetEmbeddingProvider,
-  CREATE_EMBEDDING_PROVIDER_TOOL, runCreateEmbeddingProvider,
-  UPDATE_EMBEDDING_PROVIDER_TOOL, runUpdateEmbeddingProvider,
-  DELETE_EMBEDDING_PROVIDER_TOOL, runDeleteEmbeddingProvider,
-  TEST_EMBEDDING_PROVIDER_TOOL, runTestEmbeddingProvider,
-} from "./tools/embeddingProviders.js";
 import {
   GET_SETTINGS_TOOL, runGetSettings,
   UPDATE_SETTINGS_TOOL, runUpdateSettings,
 } from "./tools/settings.js";
 import {
-  LIST_UI_ACTIONS_TOOL, runListUiActions,
-  GET_UI_ACTION_TOOL, runGetUiAction,
-  CREATE_UI_ACTION_TOOL, runCreateUiAction,
-  UPDATE_UI_ACTION_TOOL, runUpdateUiAction,
-  DELETE_UI_ACTION_TOOL, runDeleteUiAction,
   LINK_UI_ACTION_TOOL, runLinkUiAction,
-  UPDATE_UI_ACTION_LINK_TOOL, runUpdateUiActionLink,
   UNLINK_UI_ACTION_TOOL, runUnlinkUiAction,
   UI_ACTION_STATS_TOOL, runUiActionStats,
 } from "./tools/uiActions.js";
 import {
-  LIST_MCP_SERVERS_TOOL, runListMcpServers,
-  GET_MCP_SERVER_TOOL, runGetMcpServer,
-  CREATE_MCP_SERVER_TOOL, runCreateMcpServer,
-  UPDATE_MCP_SERVER_TOOL, runUpdateMcpServer,
-  DELETE_MCP_SERVER_TOOL, runDeleteMcpServer,
-  REINSTALL_MCP_SERVER_TOOL, runReinstallMcpServer,
   LINK_MCP_SERVER_TOOL, runLinkMcpServer,
   UNLINK_MCP_SERVER_TOOL, runUnlinkMcpServer,
 } from "./tools/mcpServers.js";
 import {
-  GET_MY_PLAN_TOOL, runGetMyPlan,
-  LIST_PLANS_TOOL, runListPlans,
-  CREATE_PLAN_TOOL, runCreatePlan,
-  UPDATE_PLAN_TOOL, runUpdatePlan,
-  DEACTIVATE_PLAN_TOOL, runDeactivatePlan,
-  GET_PLAN_LIMITS_TOOL, runGetPlanLimits,
-  UPDATE_PLAN_LIMITS_TOOL, runUpdatePlanLimits,
-  GET_OWNER_SUBSCRIPTION_TOOL, runGetOwnerSubscription,
-  ASSIGN_SUBSCRIPTION_TOOL, runAssignSubscription,
-  CANCEL_SUBSCRIPTION_TOOL, runCancelSubscription,
-  LIST_SUBSCRIPTIONS_TOOL, runListSubscriptions,
-  SUBSCRIPTIONS_TREND_TOOL, runSubscriptionsTrend,
-  RENEW_SUBSCRIPTION_TOOL, runRenewSubscription,
-  SUBSCRIPTION_HISTORY_TOOL, runSubscriptionHistory,
-} from "./tools/plans.js";
-import {
-  LIST_GENERATED_DOCS_TOOL, runListGeneratedDocs,
-  GENERATED_DOCS_STATS_TOOL, runGeneratedDocsStats,
-  GET_GENERATED_DOC_TOOL, runGetGeneratedDoc,
-  GET_GENERATED_DOC_URL_TOOL, runGetGeneratedDocUrl,
   DOWNLOAD_GENERATED_DOC_TOOL, runDownloadGeneratedDoc,
-  SAVE_GENERATED_DOC_TOOL, runSaveGeneratedDoc,
-  DELETE_GENERATED_DOC_TOOL, runDeleteGeneratedDoc,
 } from "./tools/generatedDocs.js";
-import {
-  WHATSAPP_INFO_TOOL, runWhatsappInfo,
-  WHATSAPP_CONNECT_TOOL, runWhatsappConnect,
-  WHATSAPP_DISCONNECT_TOOL, runWhatsappDisconnect,
-} from "./tools/whatsapp.js";
-import { LIST_ERROR_LOGS_TOOL, runListErrorLogs } from "./tools/errorLogs.js";
-import { LIST_PROVIDER_MODELS_TOOL, runListProviderModels } from "./tools/models.js";
-import {
-  GET_USER_PERMISSIONS_TOOL, runGetUserPermissions,
-  SET_USER_PERMISSIONS_TOOL, runSetUserPermissions,
-  IMPERSONATE_USER_TOOL, runImpersonateUser,
-} from "./tools/userPermissions.js";
-import {
-  LIST_USERS_TOOL, runListUsers,
-  GET_USER_TOOL, runGetUser,
-  CREATE_USER_TOOL, runCreateUser,
-  UPDATE_USER_TOOL, runUpdateUser,
-  DELETE_USER_TOOL, runDeleteUser,
-} from "./tools/users.js";
-import {
-  LIST_SKILL_FILES_TOOL, runListSkillFiles,
-  GET_SKILL_FILE_TOOL, runGetSkillFile,
-  CREATE_SKILL_FILE_TOOL, runCreateSkillFile,
-  UPDATE_SKILL_FILE_TOOL, runUpdateSkillFile,
-  DELETE_SKILL_FILE_TOOL, runDeleteSkillFile,
-} from "./tools/skillFiles.js";
-import {
-  LIST_ROLES_TOOL, runListRoles,
-  LIST_PERMISSIONS_TOOL, runListPermissions,
-  CREATE_ROLE_TOOL, runCreateRole,
-  UPDATE_ROLE_PERMISSIONS_TOOL, runUpdateRolePermissions,
-  DELETE_ROLE_TOOL, runDeleteRole,
-} from "./tools/roles.js";
-import { LIST_AUDIT_TOOL, runListAudit } from "./tools/audit.js";
-import {
-  READ_WEBHOOK_INSPECTOR_TOOL, runReadWebhookInspector,
-  CLEAR_WEBHOOK_INSPECTOR_TOOL, runClearWebhookInspector,
-} from "./tools/webhookInspector.js";
-import {
-  GET_ME_TOOL, runGetMe,
-  GET_STATUS_TOOL, runGetStatus,
-} from "./tools/status.js";
-import { LIST_RECENT_CONVERSATIONS_TOOL, runListRecentConversations } from "./tools/recentConversations.js";
-import { GET_EMBEDDING_STATS_TOOL, runGetEmbeddingStats } from "./tools/embeddingStats.js";
 import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
 import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
-import { TRANSFER_USER_RESOURCES_TOOL, runTransferUserResources, TRANSFER_AIS_TOOL, runTransferAis } from "./tools/transferUser.js";
 import {
   LIST_SCHEDULES_TOOL, runListSchedules,
   GET_SCHEDULE_TOOL, runGetSchedule,
@@ -220,148 +90,42 @@ const ALL_TOOLS = [
   // IAs
   LIST_AIS_TOOL,
   GET_AI_CONFIG_TOOL,
-  CHAT_WITH_AI_TOOL,
-  CREATE_AI_TOOL,
-  UPDATE_AI_TOOL,
-  DELETE_AI_TOOL,
   // Conversations
   LIST_CONVERSATIONS_TOOL,
-  GET_CONVERSATION_TOOL,
   DELETE_CONVERSATION_TOOL,
-  GET_CONVERSATION_STATUS_TOOL,
-  RESUME_CONVERSATION_TOOL,
-  CLOSE_CONVERSATION_TOOL,
-  HANDOFF_ACK_TOOL,
   // Skills
   LIST_SKILLS_TOOL,
-  GET_SKILL_TOOL,
-  CREATE_SKILL_TOOL,
-  UPDATE_SKILL_TOOL,
-  DELETE_SKILL_TOOL,
   IMPORT_SKILL_TOOL,
   EXPORT_SKILL_TOOL,
-  APPROVE_SKILL_TOOL,
-  REJECT_SKILL_TOOL,
-  MOVE_SKILL_TOOL,
   // Skill Files
-  LIST_SKILL_FILES_TOOL,
-  GET_SKILL_FILE_TOOL,
-  CREATE_SKILL_FILE_TOOL,
-  UPDATE_SKILL_FILE_TOOL,
-  DELETE_SKILL_FILE_TOOL,
   // Embeddings
   LIST_EMBEDDINGS_TOOL,
-  CREATE_EMBEDDING_TOOL,
-  UPDATE_EMBEDDING_TOOL,
-  DELETE_EMBEDDING_TOOL,
-  DELETE_ALL_EMBEDDINGS_TOOL,
   // Documents
-  LIST_DOCUMENTS_TOOL,
-  GET_DOCUMENT_TOOL,
-  DELETE_DOCUMENT_TOOL,
   // UI Actions
-  LIST_UI_ACTIONS_TOOL,
-  GET_UI_ACTION_TOOL,
-  CREATE_UI_ACTION_TOOL,
-  UPDATE_UI_ACTION_TOOL,
-  DELETE_UI_ACTION_TOOL,
   LINK_UI_ACTION_TOOL,
-  UPDATE_UI_ACTION_LINK_TOOL,
   UNLINK_UI_ACTION_TOOL,
   UI_ACTION_STATS_TOOL,
   // MCP Servers
-  LIST_MCP_SERVERS_TOOL,
-  GET_MCP_SERVER_TOOL,
-  CREATE_MCP_SERVER_TOOL,
-  UPDATE_MCP_SERVER_TOOL,
-  DELETE_MCP_SERVER_TOOL,
-  REINSTALL_MCP_SERVER_TOOL,
   LINK_MCP_SERVER_TOOL,
   UNLINK_MCP_SERVER_TOOL,
   // Providers
-  LIST_PROVIDERS_TOOL,
-  GET_PROVIDER_TOOL,
-  CREATE_PROVIDER_TOOL,
-  UPDATE_PROVIDER_TOOL,
-  DELETE_PROVIDER_TOOL,
-  TEST_PROVIDER_TOOL,
-  LIST_LLM_PROVIDERS_TOOL,
-  GET_LLM_PROVIDER_TOOL,
-  CREATE_LLM_PROVIDER_TOOL,
-  UPDATE_LLM_PROVIDER_TOOL,
-  DELETE_LLM_PROVIDER_TOOL,
-  TEST_LLM_PROVIDER_TOOL,
-  LIST_EMBEDDING_PROVIDERS_TOOL,
-  GET_EMBEDDING_PROVIDER_TOOL,
-  CREATE_EMBEDDING_PROVIDER_TOOL,
-  UPDATE_EMBEDDING_PROVIDER_TOOL,
-  DELETE_EMBEDDING_PROVIDER_TOOL,
-  TEST_EMBEDDING_PROVIDER_TOOL,
   // Settings
   GET_SETTINGS_TOOL,
   UPDATE_SETTINGS_TOOL,
   // Users
-  LIST_USERS_TOOL,
-  GET_USER_TOOL,
-  CREATE_USER_TOOL,
-  UPDATE_USER_TOOL,
-  DELETE_USER_TOOL,
-  GET_USER_PERMISSIONS_TOOL,
-  SET_USER_PERMISSIONS_TOOL,
-  IMPERSONATE_USER_TOOL,
   // Roles & Permissions
-  LIST_ROLES_TOOL,
-  LIST_PERMISSIONS_TOOL,
-  CREATE_ROLE_TOOL,
-  UPDATE_ROLE_PERMISSIONS_TOOL,
-  DELETE_ROLE_TOOL,
   // Plans & Subscriptions
-  GET_MY_PLAN_TOOL,
-  LIST_PLANS_TOOL,
-  CREATE_PLAN_TOOL,
-  UPDATE_PLAN_TOOL,
-  DEACTIVATE_PLAN_TOOL,
-  GET_PLAN_LIMITS_TOOL,
-  UPDATE_PLAN_LIMITS_TOOL,
-  GET_OWNER_SUBSCRIPTION_TOOL,
-  ASSIGN_SUBSCRIPTION_TOOL,
-  CANCEL_SUBSCRIPTION_TOOL,
-  LIST_SUBSCRIPTIONS_TOOL,
-  SUBSCRIPTIONS_TREND_TOOL,
-  RENEW_SUBSCRIPTION_TOOL,
-  SUBSCRIPTION_HISTORY_TOOL,
   // Generated Documents
-  LIST_GENERATED_DOCS_TOOL,
-  GENERATED_DOCS_STATS_TOOL,
-  GET_GENERATED_DOC_TOOL,
-  GET_GENERATED_DOC_URL_TOOL,
   DOWNLOAD_GENERATED_DOC_TOOL,
-  SAVE_GENERATED_DOC_TOOL,
-  DELETE_GENERATED_DOC_TOOL,
   // WhatsApp
-  WHATSAPP_INFO_TOOL,
-  WHATSAPP_CONNECT_TOOL,
-  WHATSAPP_DISCONNECT_TOOL,
   // Error logs & model discovery
-  LIST_ERROR_LOGS_TOOL,
-  LIST_PROVIDER_MODELS_TOOL,
   // Auth & Status
-  GET_ME_TOOL,
-  GET_STATUS_TOOL,
   // Audit
-  LIST_AUDIT_TOOL,
   // Webhook Inspector
-  READ_WEBHOOK_INSPECTOR_TOOL,
-  CLEAR_WEBHOOK_INSPECTOR_TOOL,
   // Tokens
-  TOKEN_USAGE_TOOL,
   // Extra
-  LIST_RECENT_CONVERSATIONS_TOOL,
-  GET_EMBEDDING_STATS_TOOL,
   UPLOAD_DOCUMENT_TOOL,
   UPLOAD_SKILL_FILE_TOOL,
-  TRANSFER_USER_RESOURCES_TOOL,
-  TRANSFER_AIS_TOOL,
   // Schedules
   LIST_SCHEDULES_TOOL,
   GET_SCHEDULE_TOOL,
@@ -375,128 +139,22 @@ type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
 const HANDLERS: Record<string, ToolHandler> = {
   [LIST_AIS_TOOL.name]: (c, a) => runListAis(c, a as any),
   [GET_AI_CONFIG_TOOL.name]: (c, a) => runGetAiConfig(c, a as any),
-  [CHAT_WITH_AI_TOOL.name]: runChatWithAi,
-  [CREATE_AI_TOOL.name]: runCreateAi,
-  [UPDATE_AI_TOOL.name]: runUpdateAi,
-  [DELETE_AI_TOOL.name]: runDeleteAi,
   [LIST_CONVERSATIONS_TOOL.name]: runListConversations,
-  [GET_CONVERSATION_TOOL.name]: runGetConversation,
   [DELETE_CONVERSATION_TOOL.name]: runDeleteConversation,
-  [GET_CONVERSATION_STATUS_TOOL.name]: runGetConversationStatus,
-  [RESUME_CONVERSATION_TOOL.name]: runResumeConversation,
-  [CLOSE_CONVERSATION_TOOL.name]: runCloseConversation,
-  [HANDOFF_ACK_TOOL.name]: runHandoffAck,
   [LIST_SKILLS_TOOL.name]: runListSkills,
-  [GET_SKILL_TOOL.name]: runGetSkill,
-  [CREATE_SKILL_TOOL.name]: runCreateSkill,
-  [UPDATE_SKILL_TOOL.name]: runUpdateSkill,
-  [DELETE_SKILL_TOOL.name]: runDeleteSkill,
   [IMPORT_SKILL_TOOL.name]: runImportSkill,
   [EXPORT_SKILL_TOOL.name]: runExportSkill,
-  [APPROVE_SKILL_TOOL.name]: runApproveSkill,
-  [REJECT_SKILL_TOOL.name]: runRejectSkill,
-  [MOVE_SKILL_TOOL.name]: runMoveSkill,
-  [LIST_SKILL_FILES_TOOL.name]: runListSkillFiles,
-  [GET_SKILL_FILE_TOOL.name]: runGetSkillFile,
-  [CREATE_SKILL_FILE_TOOL.name]: runCreateSkillFile,
-  [UPDATE_SKILL_FILE_TOOL.name]: runUpdateSkillFile,
-  [DELETE_SKILL_FILE_TOOL.name]: runDeleteSkillFile,
   [LIST_EMBEDDINGS_TOOL.name]: runListEmbeddings,
-  [CREATE_EMBEDDING_TOOL.name]: runCreateEmbedding,
-  [UPDATE_EMBEDDING_TOOL.name]: runUpdateEmbedding,
-  [DELETE_EMBEDDING_TOOL.name]: runDeleteEmbedding,
-  [DELETE_ALL_EMBEDDINGS_TOOL.name]: runDeleteAllEmbeddings,
-  [LIST_DOCUMENTS_TOOL.name]: runListDocuments,
-  [GET_DOCUMENT_TOOL.name]: runGetDocument,
-  [DELETE_DOCUMENT_TOOL.name]: runDeleteDocument,
-  [LIST_UI_ACTIONS_TOOL.name]: runListUiActions,
-  [GET_UI_ACTION_TOOL.name]: runGetUiAction,
-  [CREATE_UI_ACTION_TOOL.name]: runCreateUiAction,
-  [UPDATE_UI_ACTION_TOOL.name]: runUpdateUiAction,
-  [DELETE_UI_ACTION_TOOL.name]: runDeleteUiAction,
   [LINK_UI_ACTION_TOOL.name]: runLinkUiAction,
-  [UPDATE_UI_ACTION_LINK_TOOL.name]: runUpdateUiActionLink,
   [UNLINK_UI_ACTION_TOOL.name]: runUnlinkUiAction,
   [UI_ACTION_STATS_TOOL.name]: runUiActionStats,
-  [LIST_MCP_SERVERS_TOOL.name]: runListMcpServers,
-  [GET_MCP_SERVER_TOOL.name]: runGetMcpServer,
-  [CREATE_MCP_SERVER_TOOL.name]: runCreateMcpServer,
-  [UPDATE_MCP_SERVER_TOOL.name]: runUpdateMcpServer,
-  [DELETE_MCP_SERVER_TOOL.name]: runDeleteMcpServer,
-  [REINSTALL_MCP_SERVER_TOOL.name]: runReinstallMcpServer,
   [LINK_MCP_SERVER_TOOL.name]: runLinkMcpServer,
   [UNLINK_MCP_SERVER_TOOL.name]: runUnlinkMcpServer,
-  [LIST_PROVIDERS_TOOL.name]: (_c) => runListProviders(_c),
-  [GET_PROVIDER_TOOL.name]: runGetProvider,
-  [CREATE_PROVIDER_TOOL.name]: runCreateProvider,
-  [UPDATE_PROVIDER_TOOL.name]: runUpdateProvider,
-  [DELETE_PROVIDER_TOOL.name]: runDeleteProvider,
-  [TEST_PROVIDER_TOOL.name]: runTestProvider,
-  [LIST_LLM_PROVIDERS_TOOL.name]: (_c) => runListLlmProviders(_c),
-  [GET_LLM_PROVIDER_TOOL.name]: runGetLlmProvider,
-  [CREATE_LLM_PROVIDER_TOOL.name]: runCreateLlmProvider,
-  [UPDATE_LLM_PROVIDER_TOOL.name]: runUpdateLlmProvider,
-  [DELETE_LLM_PROVIDER_TOOL.name]: runDeleteLlmProvider,
-  [TEST_LLM_PROVIDER_TOOL.name]: runTestLlmProvider,
-  [LIST_EMBEDDING_PROVIDERS_TOOL.name]: (_c) => runListEmbeddingProviders(_c),
-  [GET_EMBEDDING_PROVIDER_TOOL.name]: runGetEmbeddingProvider,
-  [CREATE_EMBEDDING_PROVIDER_TOOL.name]: runCreateEmbeddingProvider,
-  [UPDATE_EMBEDDING_PROVIDER_TOOL.name]: runUpdateEmbeddingProvider,
-  [DELETE_EMBEDDING_PROVIDER_TOOL.name]: runDeleteEmbeddingProvider,
-  [TEST_EMBEDDING_PROVIDER_TOOL.name]: runTestEmbeddingProvider,
   [GET_SETTINGS_TOOL.name]: runGetSettings,
   [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
-  [LIST_USERS_TOOL.name]: runListUsers,
-  [GET_USER_TOOL.name]: runGetUser,
-  [CREATE_USER_TOOL.name]: runCreateUser,
-  [UPDATE_USER_TOOL.name]: runUpdateUser,
-  [DELETE_USER_TOOL.name]: runDeleteUser,
-  [GET_USER_PERMISSIONS_TOOL.name]: runGetUserPermissions,
-  [SET_USER_PERMISSIONS_TOOL.name]: runSetUserPermissions,
-  [IMPERSONATE_USER_TOOL.name]: runImpersonateUser,
-  [LIST_ROLES_TOOL.name]: (_c) => runListRoles(_c),
-  [LIST_PERMISSIONS_TOOL.name]: (_c) => runListPermissions(_c),
-  [CREATE_ROLE_TOOL.name]: runCreateRole,
-  [UPDATE_ROLE_PERMISSIONS_TOOL.name]: runUpdateRolePermissions,
-  [DELETE_ROLE_TOOL.name]: runDeleteRole,
-  [GET_MY_PLAN_TOOL.name]: (_c) => runGetMyPlan(_c),
-  [LIST_PLANS_TOOL.name]: (_c) => runListPlans(_c),
-  [CREATE_PLAN_TOOL.name]: runCreatePlan,
-  [UPDATE_PLAN_TOOL.name]: runUpdatePlan,
-  [DEACTIVATE_PLAN_TOOL.name]: runDeactivatePlan,
-  [GET_PLAN_LIMITS_TOOL.name]: runGetPlanLimits,
-  [UPDATE_PLAN_LIMITS_TOOL.name]: runUpdatePlanLimits,
-  [GET_OWNER_SUBSCRIPTION_TOOL.name]: runGetOwnerSubscription,
-  [ASSIGN_SUBSCRIPTION_TOOL.name]: runAssignSubscription,
-  [CANCEL_SUBSCRIPTION_TOOL.name]: runCancelSubscription,
-  [LIST_SUBSCRIPTIONS_TOOL.name]: runListSubscriptions,
-  [SUBSCRIPTIONS_TREND_TOOL.name]: runSubscriptionsTrend,
-  [RENEW_SUBSCRIPTION_TOOL.name]: runRenewSubscription,
-  [SUBSCRIPTION_HISTORY_TOOL.name]: runSubscriptionHistory,
-  [LIST_GENERATED_DOCS_TOOL.name]: runListGeneratedDocs,
-  [GENERATED_DOCS_STATS_TOOL.name]: runGeneratedDocsStats,
-  [GET_GENERATED_DOC_TOOL.name]: runGetGeneratedDoc,
-  [GET_GENERATED_DOC_URL_TOOL.name]: runGetGeneratedDocUrl,
   [DOWNLOAD_GENERATED_DOC_TOOL.name]: runDownloadGeneratedDoc,
-  [SAVE_GENERATED_DOC_TOOL.name]: runSaveGeneratedDoc,
-  [DELETE_GENERATED_DOC_TOOL.name]: runDeleteGeneratedDoc,
-  [WHATSAPP_INFO_TOOL.name]: runWhatsappInfo,
-  [WHATSAPP_CONNECT_TOOL.name]: runWhatsappConnect,
-  [WHATSAPP_DISCONNECT_TOOL.name]: runWhatsappDisconnect,
-  [LIST_ERROR_LOGS_TOOL.name]: runListErrorLogs,
-  [LIST_PROVIDER_MODELS_TOOL.name]: runListProviderModels,
-  [GET_ME_TOOL.name]: (_c) => runGetMe(_c),
-  [GET_STATUS_TOOL.name]: (_c) => runGetStatus(_c),
-  [LIST_AUDIT_TOOL.name]: runListAudit,
-  [READ_WEBHOOK_INSPECTOR_TOOL.name]: runReadWebhookInspector,
-  [CLEAR_WEBHOOK_INSPECTOR_TOOL.name]: runClearWebhookInspector,
-  [TOKEN_USAGE_TOOL.name]: (_c) => runTokenUsage(_c),
-  [LIST_RECENT_CONVERSATIONS_TOOL.name]: runListRecentConversations,
-  [GET_EMBEDDING_STATS_TOOL.name]: runGetEmbeddingStats,
   [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
   [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
-  [TRANSFER_USER_RESOURCES_TOOL.name]: runTransferUserResources,
-  [TRANSFER_AIS_TOOL.name]: runTransferAis,
   [LIST_SCHEDULES_TOOL.name]: runListSchedules,
   [GET_SCHEDULE_TOOL.name]: runGetSchedule,
   [CREATE_SCHEDULE_TOOL.name]: runCreateSchedule,
@@ -513,26 +171,35 @@ export async function startServer(): Promise<void> {
   // Cache do catálogo por sessão: uma busca no primeiro tools/list. O editor
   // reconecta com frequência, e uma ida ao backend por listagem seria ruído.
   let remoteTools: RemoteTool[] | null = null;
+  let catalogoOk = true;
   let remoteNames = new Set<string>();
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     if (remoteTools === null) {
       try {
         const creds = await requireCredentials();
-        remoteTools = await fetchRemoteTools(creds);
+        const res = await fetchRemoteTools(creds);
+        remoteTools = res.tools;
+        catalogoOk = res.ok;
       } catch {
-        // Sem credencial ainda: segue com as locais e tenta de novo depois.
-        remoteTools = [];
+        // Sem credencial ainda: nova tentativa no próximo tools/list, depois
+        // do login. Não é falha do catálogo, então não mostra a sentinela.
         return { tools: ALL_TOOLS };
       }
     }
     const merged = mergeTools(ALL_TOOLS, remoteTools);
     remoteNames = merged.remoteNames;
-    return { tools: merged.tools };
+    return {
+      tools: catalogoOk ? merged.tools : [...merged.tools, CATALOG_UNAVAILABLE_TOOL],
+    };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    if (name === CATALOG_UNAVAILABLE_TOOL.name) {
+      return jsonContent({ error: CATALOG_UNAVAILABLE_TOOL.description });
+    }
 
     // Tool servida pelo catálogo: executa pelo nome, o backend resolve a rota.
     if (remoteNames.has(name)) {

@@ -63,40 +63,31 @@ Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**
 
 A lista é **dinâmica**: no primeiro `tools/list` da sessão o cliente busca o
 catálogo em `GET /dashboard/mcp-catalog` do seu Aurora e registra o que vier de
-lá, junto das tools que ainda vivem neste pacote. Tool nova no backend aparece
-sem atualizar o pacote; em caso de nome repetido, a versão do catálogo vence.
+lá, junto das 23 tools que ainda vivem neste pacote (uploads, downloads e as
+que combinam mais de uma chamada). Tool nova no backend aparece sem atualizar o
+pacote; em caso de nome repetido, a versão do catálogo vence.
 
-Se o backend estiver indisponível ou for uma versão antiga sem catálogo, o
-cliente segue apenas com as tools locais — a sessão degrada, não quebra.
+> **A partir da 0.7.0 o backend precisa expor o catálogo.** As tools que antes
+> vinham embutidas foram movidas para lá — apontado para um Aurora anterior a
+> essa mudança, o cliente mostra só as 23 locais e uma tool
+> `aurora_catalog_unavailable` explicando o que fazer. Para seguir com o
+> conjunto antigo embutido, fixe `@expertcustom/aurora-mcp@0.6.x`.
 
 Os grupos abaixo refletem as tools locais desta versão.
 
 | Categoria | Tools |
 |-----------|-------|
-| **IAs** | `list_ais`, `get_ai_config`, `create_ai`, `update_ai`, `delete_ai` |
-| **Chat** | `chat_with_ai` |
-| **Conversas** | `list_conversations`, `get_conversation`, `delete_conversation`, `get_conversation_status`, `resume_conversation`, `close_conversation`, `handoff_ack`, `list_recent_conversations` |
-| **Skills** | `list_skills`, `get_skill`, `create_skill`, `update_skill`, `delete_skill`, `import_skill`, `export_skill`, `approve_skill`, `reject_skill`, `move_skill` |
-| **Skill Files** | `list_skill_files`, `get_skill_file`, `create_skill_file`, `update_skill_file`, `delete_skill_file`, `upload_skill_file` |
-| **Embeddings** | `list_embeddings`, `create_embedding`, `update_embedding`, `delete_embedding`, `delete_all_embeddings`, `get_embedding_stats` |
-| **Documents** | `list_documents`, `get_document`, `delete_document`, `upload_document` |
-| **UI Actions** | `list_ui_actions`, `get_ui_action`, `create_ui_action`, `update_ui_action`, `delete_ui_action`, `link_ui_action_to_ai`, `update_ui_action_link`, `unlink_ui_action_from_ai`, `ui_action_stats` |
-| **MCP Servers** | `list_mcp_servers`, `get_mcp_server`, `create_mcp_server`, `update_mcp_server`, `delete_mcp_server`, `reinstall_mcp_server`, `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
-| **Providers (mensageria)** | `list_providers`, `get_provider`, `create_provider`, `update_provider`, `delete_provider`, `test_provider` |
-| **Providers de LLM** | `list_llm_providers`, `get_llm_provider`, `create_llm_provider`, `update_llm_provider`, `delete_llm_provider`, `test_llm_provider` |
-| **Providers de embedding** | `list_embedding_providers`, `get_embedding_provider`, `create_embedding_provider`, `update_embedding_provider`, `delete_embedding_provider`, `test_embedding_provider` |
-| **Model discovery** | `list_provider_models` |
+| **IAs** | `list_ais`, `get_ai_config` |
+| **Conversas** | `list_conversations`, `delete_conversation` |
+| **Skills** | `list_skills`, `import_skill`, `export_skill` |
+| **Skill Files** | `upload_skill_file` |
+| **Embeddings** | `list_embeddings` |
+| **Documents** | `upload_document` |
+| **UI Actions** | `link_ui_action_to_ai`, `unlink_ui_action_from_ai`, `ui_action_stats` |
+| **MCP Servers** | `link_mcp_server_to_ai`, `unlink_mcp_server_from_ai` |
 | **Scheduled Tasks** | `list_schedules`, `get_schedule`, `create_schedule`, `update_schedule`, `delete_schedule` |
-| **Usuários** | `list_users`, `get_user`, `create_user`, `update_user`, `delete_user`, `get_user_permissions`, `set_user_permissions`, `impersonate_user`, `transfer_user_resources`, `get_me` |
-| **Roles** | `list_roles`, `list_permissions`, `create_role`, `update_role_permissions`, `delete_role` |
-| **Planos & assinaturas** | `get_my_plan`, `list_plans`, `create_plan`, `update_plan`, `deactivate_plan`, `get_plan_limits`, `update_plan_limits`, `get_owner_subscription`, `assign_subscription`, `cancel_subscription`, `list_subscriptions`, `subscriptions_trend`, `renew_subscription`, `subscription_history` |
-| **Documentos gerados** | `list_generated_docs`, `generated_docs_stats`, `get_generated_doc`, `get_generated_doc_url`, `download_generated_doc`, `save_generated_doc`, `delete_generated_doc` |
-| **WhatsApp** | `whatsapp_info`, `whatsapp_connect`, `whatsapp_disconnect` |
+| **Documentos gerados** | `download_generated_doc` |
 | **Settings** | `get_settings`, `update_settings` |
-| **Audit & Erros** | `list_audit`, `list_error_logs` |
-| **Token Usage** | `token_usage` |
-| **Webhook Inspector** | `read_webhook_inspector`, `clear_webhook_inspector` |
-| **Status** | `get_status` |
 
 Todas as tools operam via API REST do Aurora. Credenciais de provider **nunca** são expostas.
 
