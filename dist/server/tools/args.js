@@ -84,3 +84,20 @@ export function enumOpcional(args, campo, valores) {
     }
     return valor;
 }
+/**
+ * Booleano estrito, com uma concessão: aceita "true"/"false" em texto.
+ *
+ * O modelo às vezes serializa booleano como string ao montar os argumentos, e
+ * recusar isso transformaria um aceite legítimo do fornecedor em erro de
+ * argumento — barulho que o operador não tem como consertar.
+ */
+export function booleanoObrigatorio(args, campo) {
+    const valor = args[campo];
+    if (typeof valor === "boolean")
+        return valor;
+    if (valor === "true")
+        return true;
+    if (valor === "false")
+        return false;
+    throw new ArgumentoInvalidoError(`"${campo}" é obrigatório e deve ser true ou false.`);
+}

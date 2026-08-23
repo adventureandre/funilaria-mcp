@@ -28,6 +28,10 @@ import {
   CONSULTAR_PENDENCIAS_TOOL,
   runConsultarPendencias,
 } from "./tools/consultarPendencias.js";
+import {
+  RESPONDER_CONVITE_FORNECEDOR_TOOL,
+  runResponderConviteFornecedor,
+} from "./tools/responderConviteFornecedor.js";
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
 
@@ -49,6 +53,10 @@ const TOOLS: ToolRegistration[] = [
   { definition: CONSULTAR_BALANCETE_TOOL, handler: runConsultarBalancete },
   { definition: BUSCAR_FORNECEDOR_TOOL, handler: runBuscarFornecedor },
   { definition: CONSULTAR_PENDENCIAS_TOOL, handler: runConsultarPendencias },
+  {
+    definition: RESPONDER_CONVITE_FORNECEDOR_TOOL,
+    handler: runResponderConviteFornecedor,
+  },
 ];
 
 const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));

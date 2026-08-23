@@ -1,0 +1,90 @@
+import { apiRequest } from "../../auth/client.js";
+import type { Credentials } from "../../auth/credentials.js";
+import {
+  booleanoObrigatorio,
+  objeto,
+  textoObrigatorio,
+  type ToolDefinition,
+} from "./args.js";
+
+/**
+ * Resposta de `POST /fornecedores/webhook/convite-resposta`.
+ *
+ * O backend devolve o estado JÁ atualizado do fornecedor. É o que permite à IA
+ * confirmar o aceite ao fornecedor sabendo que gravou, em vez de prometer com
+ * base na própria chamada ter retornado sem erro.
+ */
+interface ConviteRespostaResponse {
+  id: string;
+  name: string;
+  inviteStatus: "NAO_ENVIADO" | "ENVIADO" | "ACEITO" | "RECUSADO";
+  visibility: "PRIVADO" | "PUBLICO";
+  whatsappOptIn: boolean;
+}
+
+export const RESPONDER_CONVITE_FORNECEDOR_TOOL: ToolDefinition = {
+  name: "responder_convite_fornecedor",
+  title: "Registrar o aceite ou a recusa do fornecedor ao convite",
+  description:
+    "Registra no portal a resposta do fornecedor ao convite de opt-in " +
+    "(POST /fornecedores/webhook/convite-resposta). " +
+    "COMO CHEGAR AQUI: a mensagem do fornecedor vem só com o telefone, sem dizer a que ela responde. " +
+    "Chame antes consultar_pendencias_fornecedor com o número dele: se voltar " +
+    "fornecedor.conviteStatus = 'ENVIADO' e nenhuma consulta em aberto, a mensagem é resposta de " +
+    "convite — use o fornecedor.id de lá como supplierId. Não invente o id nem reaproveite candidateId. " +
+    "QUEM DECIDE SE FOI ACEITE É VOCÊ: mande aceitou=true para 'sim', 'pode mandar', 'topo', 'claro'; " +
+    "aceitou=false para 'não', 'não quero', 'me tira da lista'. Se a resposta for ambígua ou for uma " +
+    "pergunta de volta ('quem é vocês?'), NÃO chame esta tool — responda a dúvida e espere uma resposta " +
+    "clara, porque aceitou=true liga o contato automático e não há segundo convite. " +
+    "EFEITOS de aceitou=true: liga whatsappOptIn e aiContactEnabled, torna o cadastro PÚBLICO (ele passa " +
+    "a atender todas as oficinas, não só a que o convidou) e ativa o fornecedor. Com aceitou=false o " +
+    "contato automático fica desligado e o opt-out é datado. " +
+    "DEVOLVE { id, name, inviteStatus, visibility, whatsappOptIn } com o estado já gravado: confirme ao " +
+    "fornecedor só depois de ver inviteStatus='ACEITO' (ou 'RECUSADO'). Se vier diferente do que você " +
+    "mandou, não insista nem chame de novo — diga que houve um problema no registro. " +
+    "QUANDO NÃO USAR: para resposta a uma busca de peça (use responder_busca_peca) e para quem já está " +
+    "com conviteStatus 'ACEITO' ou 'RECUSADO' — o convite é único e não se responde duas vezes.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      supplierId: {
+        type: "string",
+        description:
+          "Id do fornecedor, vindo de fornecedor.id na resposta de consultar_pendencias_fornecedor.",
+      },
+      message: {
+        type: "string",
+        maxLength: 1000,
+        description:
+          "Texto exato que o fornecedor mandou, sem editar nem resumir — fica no log de consentimento.",
+      },
+      aceitou: {
+        type: "boolean",
+        description:
+          "true quando ele concordou em receber as consultas; false quando recusou.",
+      },
+    },
+    required: ["supplierId", "message", "aceitou"],
+    additionalProperties: false,
+  },
+};
+
+export async function runResponderConviteFornecedor(
+  creds: Credentials,
+  args: unknown,
+): Promise<ConviteRespostaResponse> {
+  const a = objeto(args);
+  return apiRequest<ConviteRespostaResponse>(
+    creds,
+    "/fornecedores/webhook/convite-resposta",
+    {
+      method: "POST",
+      auth: "servico",
+      body: {
+        supplierId: textoObrigatorio(a, "supplierId"),
+        message: textoObrigatorio(a, "message", { max: 1000 }),
+        aceitou: booleanoObrigatorio(a, "aceitou"),
+      },
+    },
+  );
+}
