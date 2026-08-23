@@ -10,17 +10,22 @@ IA do Aurora ──stdio──> npx @expertcustom/funilaria-mcp ──HTTPS─�
 
 Pela ADR-001, este pacote é **adaptador**: nenhuma regra de negócio mora aqui. Toda tool chama um endpoint que já existe, e o serviço do backend continua sendo o dono da decisão.
 
-## Tools
+## Tools — quem define é o backend
 
-| Tool | Endpoint | Autenticação | O que faz |
-|---|---|---|---|
-| `publicar_noticia` | `POST /noticias/ingestao` | serviço | Entrega uma matéria ao CMS **como rascunho**. Publicar continua sendo ato humano. |
-| `responder_busca_peca` | `POST /buscas/webhook/resposta-fornecedor` | serviço | Registra a resposta crua do fornecedor no WhatsApp; o backend extrai preço, prazo e condição. |
-| `lancar_consumo` | `POST /estoque/webhook/whatsapp` | serviço | Lança consumo de material a partir da mensagem do funcionário. Devolve em `respostaParaOFuncionario` o texto a mandar de volta. |
-| `consultar_estoque` | `GET /estoque` | serviço + `shopId` | Saldo dos materiais da oficina, com destaque para o que está abaixo do mínimo. |
-| `consultar_balancete` | `GET /estoque/balancete` | serviço + `shopId` | Consumo, entrada, perda e custo do período, por material e por funcionário. |
-| `buscar_fornecedor` | `GET /fornecedores` | pública | Diretório de fornecedores com filtros de nome, tipo, categoria e localidade. |
-| `consultar_pendencias_fornecedor` | `GET /fornecedores/integracao/pendencias` | serviço | O que o portal espera de um fornecedor, pelo WhatsApp dele: consultas de peça e pedidos em aberto. |
+Este pacote **não sabe quais tools existem**. Na subida ele busca `GET /mcp/catalogo` e publica o que vier; a execução vai por `POST /mcp/executar`, e o backend resolve o nome para o serviço.
+
+```
+subida  ──> GET  /mcp/catalogo   → lista publicada em tools/list
+chamada ──> POST /mcp/executar   → { name, args }
+```
+
+O motivo é operacional: antes, tool nova custava editar este pacote, buildar, commitar, publicar e reinstalar o MCP no Aurora — cinco passos para expor um endpoint que já existia no backend. Agora é commit de um módulo só, em `backend/src/mcp`.
+
+A lista corrente sai de `GET /mcp/catalogo`. Não há cópia dela aqui de propósito: cópia envelhece e passa a mentir.
+
+**Quando o catálogo não responde**, o servidor publica uma única tool, `funilaria_catalogo_indisponivel`, cuja descrição explica o que verificar. Sem ela o sintoma seria "sumiram as tools" e o diagnóstico começaria pelo lugar errado.
+
+O catálogo é buscado **uma vez, na subida**: o cliente MCP lê `tools/list` logo após conectar e não volta a perguntar. Tool adicionada no backend entra na próxima reinstalação do servidor no Aurora.
 
 ## Autenticação
 
@@ -28,7 +33,7 @@ Pela ADR-001, este pacote é **adaptador**: nenhuma regra de negócio mora aqui.
 
 Uma IA que atende várias oficinas não tem sessão, então a oficina é **parâmetro**, nunca contexto implícito. Do lado do backend isso é o `@AllowService()` nas rotas de leitura de estoque: o `JwtAuthGuard` aceita o segredo no lugar do JWT e o `ShopContextGuard` passa a exigir o `shopId` — id inexistente responde `404 Oficina não encontrada`, e não uma lista vazia que se confundiria com "oficina sem estoque".
 
-**Sessão de usuário** (JWT de `POST /auth/entrar`) continua suportada para desenvolvimento local: sem `shopId`, a oficina vem da sessão. O access token dura ~15 min, então o cliente renova sozinho pelo refresh token e regrava o par rotacionado. Passar `shopId` nesse modo é recusado na hora, com explicação — a rota devolveria a oficina da sessão como se fosse a pedida.
+**Sessão de usuário** (JWT de `POST /auth/entrar`) continua existindo para os comandos de CLI, mas **não vale mais para as tools**: `POST /mcp/executar` é sempre chamada de serviço, e a oficina é sempre parâmetro explícito. Uma IA que atende várias oficinas nunca teve sessão; manter os dois modos só criava um caminho em que `shopId` omitido significava coisas diferentes.
 
 ### Configuração — env é o caminho principal
 

@@ -11,63 +11,12 @@ import {
   type Credentials,
 } from "../auth/credentials.js";
 import { ApiError, CredentialMissingError } from "../auth/client.js";
-import { ArgumentoInvalidoError, type ToolDefinition } from "./tools/args.js";
-import { PUBLICAR_NOTICIA_TOOL, runPublicarNoticia } from "./tools/publicarNoticia.js";
+import { ArgumentoInvalidoError } from "./types.js";
 import {
-  RESPONDER_BUSCA_PECA_TOOL,
-  runResponderBuscaPeca,
-} from "./tools/responderBuscaPeca.js";
-import { LANCAR_CONSUMO_TOOL, runLancarConsumo } from "./tools/lancarConsumo.js";
-import { CONSULTAR_ESTOQUE_TOOL, runConsultarEstoque } from "./tools/consultarEstoque.js";
-import {
-  CONSULTAR_BALANCETE_TOOL,
-  runConsultarBalancete,
-} from "./tools/consultarBalancete.js";
-import { BUSCAR_FORNECEDOR_TOOL, runBuscarFornecedor } from "./tools/buscarFornecedor.js";
-import {
-  CONSULTAR_PENDENCIAS_TOOL,
-  runConsultarPendencias,
-} from "./tools/consultarPendencias.js";
-import {
-  RESPONDER_CONVITE_FORNECEDOR_TOOL,
-  runResponderConviteFornecedor,
-} from "./tools/responderConviteFornecedor.js";
-import {
-  IDENTIFICAR_FUNCIONARIO_TOOL,
-  runIdentificarFuncionario,
-} from "./tools/identificarFuncionario.js";
-
-type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
-
-interface ToolRegistration {
-  definition: ToolDefinition;
-  handler: ToolHandler;
-}
-
-/**
- * Registro único: a lista publicada em `tools/list` e o despacho de
- * `tools/call` saem daqui, então não existe o bug de anunciar uma tool que
- * ninguém implementa (ou o contrário).
- */
-const TOOLS: ToolRegistration[] = [
-  { definition: PUBLICAR_NOTICIA_TOOL, handler: runPublicarNoticia },
-  { definition: RESPONDER_BUSCA_PECA_TOOL, handler: runResponderBuscaPeca },
-  { definition: LANCAR_CONSUMO_TOOL, handler: runLancarConsumo },
-  { definition: CONSULTAR_ESTOQUE_TOOL, handler: runConsultarEstoque },
-  { definition: CONSULTAR_BALANCETE_TOOL, handler: runConsultarBalancete },
-  { definition: BUSCAR_FORNECEDOR_TOOL, handler: runBuscarFornecedor },
-  { definition: CONSULTAR_PENDENCIAS_TOOL, handler: runConsultarPendencias },
-  {
-    definition: RESPONDER_CONVITE_FORNECEDOR_TOOL,
-    handler: runResponderConviteFornecedor,
-  },
-  {
-    definition: IDENTIFICAR_FUNCIONARIO_TOOL,
-    handler: runIdentificarFuncionario,
-  },
-];
-
-const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));
+  CATALOGO_INDISPONIVEL_TOOL,
+  callCatalogTool,
+  fetchCatalog,
+} from "./catalog/remoteCatalog.js";
 
 /**
  * Formato de `CallToolResult` do SDK. A assinatura de índice está aqui porque
@@ -130,25 +79,40 @@ export async function startServer(): Promise<void> {
     { capabilities: { tools: {} } },
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, () => ({
-    tools: TOOLS.map((t) => t.definition),
-  }));
+  // O catálogo é buscado UMA vez, na subida: o cliente MCP lê tools/list logo
+  // após conectar e não volta a perguntar. Tool adicionada no backend entra na
+  // próxima reinstalação do servidor no Aurora.
+  const catalogo = await fetchCatalog(await loadCredentials());
+  const tools = catalogo.ok ? catalogo.tools : [CATALOGO_INDISPONIVEL_TOOL];
+  const disponiveis = new Set(tools.map((t) => t.name));
+
+  process.stderr.write(
+    catalogo.ok
+      ? `[${SERVER_NAME}] ${tools.length} tools carregadas do catálogo.\n`
+      : `[${SERVER_NAME}] catálogo indisponível — nenhuma tool do portal nesta sessão.\n`,
+  );
+
+  server.setRequestHandler(ListToolsRequestSchema, () => ({ tools }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const tool = POR_NOME.get(name);
-    if (!tool) {
+
+    if (name === CATALOGO_INDISPONIVEL_TOOL.name) {
+      return errorContent(new Error(CATALOGO_INDISPONIVEL_TOOL.description));
+    }
+    if (!disponiveis.has(name)) {
       return errorContent(
         new Error(
-          `Tool desconhecida: ${name}. Disponíveis: ${[...POR_NOME.keys()].join(", ")}.`,
+          `Tool desconhecida: ${name}. Disponíveis: ${[...disponiveis].join(", ")}.`,
         ),
       );
     }
+
     try {
-      // A credencial é lida a cada chamada: quem rodar `login` com o servidor no
-      // ar passa a valer na próxima tool, sem reiniciar o cliente MCP.
+      // A credencial é lida a cada chamada: quem trocar o segredo com o
+      // servidor no ar passa a valer na próxima tool, sem reiniciar o cliente.
       const creds = await loadCredentials();
-      return jsonContent(await tool.handler(creds, args));
+      return jsonContent(await callCatalogTool(creds, name, args));
     } catch (err) {
       return errorContent(err);
     }
