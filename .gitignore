@@ -1,5 +1,12 @@
 node_modules
-dist
 *.log
 .env
 .env.local
+
+# dist/ É VERSIONADO de propósito — não adicione aqui.
+#
+# O Aurora instala este MCP clonando o repositório e rodando
+# `npm install --omit=dev`. Ele NÃO roda build, e `--omit=dev` nem instala o
+# TypeScript. Sem o dist/ commitado, o servidor sobe apontando para um arquivo
+# que não existe e a IA simplesmente não enxerga tool nenhuma — sem erro
+# visível, que é o pior tipo de falha.
