@@ -1,12 +1,12 @@
 {
-  "name": "@expertcustom/aurora-mcp",
-  "version": "0.7.3",
-  "description": "MCP server to connect Claude Code (and other MCP clients) to Aurora AIs",
+  "name": "@expertcustom/funilaria-mcp",
+  "version": "0.1.0",
+  "description": "Servidor MCP com as tools tipadas de escrita e leitura do portal Funilaria & Pintura",
   "license": "UNLICENSED",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "aurora-mcp": "dist/index.js"
+    "funilaria-mcp": "dist/index.js"
   },
   "files": [
     "dist"

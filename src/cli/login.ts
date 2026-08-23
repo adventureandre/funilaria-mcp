@@ -1,152 +1,115 @@
 import * as readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { DEFAULT_AURORA_URL } from "../config.js";
-import { saveCredentials, credentialsLocation } from "../auth/credentials.js";
+import { DEFAULT_API_URL, PACKAGE_NAME } from "../config.js";
+import { loadCredentials, saveCredentials } from "../auth/credentials.js";
+import { promptHidden, validarUrl } from "./prompt.js";
 
-interface LoginResponse {
-  token: string;
-  user: { id: string; name: string; email: string; role: string };
+interface SessionResponse {
+  accessToken?: string;
+  refreshToken?: string;
+  user?: { email?: string; name?: string; role?: string; shopId?: string | null };
 }
 
-function promptHidden(prompt: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    stdout.write(prompt);
-    const wasRaw = stdin.isRaw === true;
-    try {
-      stdin.setRawMode?.(true);
-    } catch (err) {
-      reject(err);
-      return;
-    }
-    stdin.resume();
-    stdin.setEncoding("utf8");
-
-    let value = "";
-    const cleanup = () => {
-      stdin.off("data", onData);
-      try {
-        stdin.setRawMode?.(wasRaw);
-      } catch {
-        // ignore
-      }
-      stdin.pause();
-    };
-
-    const onData = (chunk: string) => {
-      for (const ch of chunk) {
-        const code = ch.charCodeAt(0);
-        if (ch === "\r" || ch === "\n") {
-          cleanup();
-          stdout.write("\n");
-          resolve(value);
-          return;
-        }
-        if (code === 3) {
-          cleanup();
-          process.exit(130);
-        }
-        if (code === 127 || code === 8) {
-          if (value.length > 0) {
-            value = value.slice(0, -1);
-            stdout.write("\b \b");
-          }
-          continue;
-        }
-        if (code >= 32) {
-          value += ch;
-          stdout.write("*");
-        }
-      }
-    };
-
-    stdin.on("data", onData);
-  });
-}
-
+/**
+ * Login de PESSOA (`POST /auth/entrar`). Serve às tools de leitura que ainda
+ * dependem de sessão — hoje só `consultar_estoque` sem shopId. Para escrever
+ * pelas tools da IA, o comando é `login-servico`.
+ */
 export async function runLogin(): Promise<void> {
-  stdout.write("Aurora MCP login\n");
-  stdout.write("----------------\n");
+  const atual = await loadCredentials();
+  stdout.write("Funilaria MCP — login de usuário\n");
+  stdout.write("--------------------------------\n");
 
   const rl = readline.createInterface({ input: stdin, output: stdout });
-  let auroraUrl: string;
+  let apiUrl: string;
   let email: string;
   try {
-    const urlInput = (
-      await rl.question(`Aurora API URL [${DEFAULT_AURORA_URL}]: `)
-    ).trim();
-    auroraUrl =
-      urlInput.length > 0 ? urlInput.replace(/\/+$/, "") : DEFAULT_AURORA_URL;
+    const padrao = atual.apiUrl || DEFAULT_API_URL;
+    const urlInput = (await rl.question(`URL da API [${padrao}]: `)).trim();
+    apiUrl = (urlInput.length > 0 ? urlInput : padrao).replace(/\/+$/, "");
 
-    if (!/^https:\/\//i.test(auroraUrl)) {
-      stdout.write("Aurora URL must use HTTPS.\n");
+    const erroUrl = validarUrl(apiUrl);
+    if (erroUrl) {
+      stdout.write(`${erroUrl}\n`);
       process.exitCode = 1;
       return;
     }
 
-    email = (await rl.question("Email: ")).trim();
+    email = (await rl.question("E-mail: ")).trim();
   } finally {
     rl.close();
   }
 
   if (!email) {
-    stdout.write("Email is required.\n");
+    stdout.write("E-mail é obrigatório.\n");
     process.exitCode = 1;
     return;
   }
 
-  const password = await promptHidden("Password: ");
+  const password = await promptHidden("Senha: ");
   if (!password) {
-    stdout.write("Password is required.\n");
+    stdout.write("Senha é obrigatória.\n");
     process.exitCode = 1;
     return;
   }
 
-  stdout.write("Authenticating...\n");
-  const res = await fetch(`${auroraUrl}/dashboard/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const text = await res.text();
-  let parsed: any;
+  stdout.write("Autenticando...\n");
+  let res: Response;
   try {
-    parsed = text.length > 0 ? JSON.parse(text) : null;
+    res = await fetch(`${apiUrl}/auth/entrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch (err) {
+    stdout.write(
+      `Não consegui falar com ${apiUrl}: ${err instanceof Error ? err.message : String(err)}\n`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const texto = await res.text();
+  let parsed: unknown = null;
+  try {
+    parsed = texto.length > 0 ? JSON.parse(texto) : null;
   } catch {
-    parsed = text;
+    parsed = texto;
   }
 
   if (!res.ok) {
-    const message = parsed?.message ?? `HTTP ${res.status}`;
-    stdout.write(`Login failed: ${message}\n`);
+    const detalhe =
+      parsed && typeof parsed === "object" && typeof (parsed as { message?: unknown }).message === "string"
+        ? (parsed as { message: string }).message
+        : `HTTP ${res.status}`;
+    stdout.write(`Login falhou: ${detalhe}\n`);
     process.exitCode = 1;
     return;
   }
 
-  const data = parsed as LoginResponse;
-  if (!data?.token) {
-    stdout.write("Login response did not contain a token.\n");
+  const data = (parsed ?? {}) as SessionResponse;
+  if (!data.accessToken) {
+    stdout.write("A resposta do login não trouxe accessToken.\n");
     process.exitCode = 1;
     return;
   }
 
   const file = await saveCredentials({
-    auroraUrl,
-    token: data.token,
+    apiUrl,
+    token: data.accessToken,
+    refreshToken: data.refreshToken ?? null,
     email: data.user?.email ?? email,
-    savedAt: new Date().toISOString(),
+    shopId: data.user?.shopId ?? null,
   });
 
-  stdout.write(`Logged in as ${data.user?.email ?? email}.\n`);
-  stdout.write(`Credentials saved to ${file} (mode 0600).\n`);
-  stdout.write(
-    "Add this MCP to Claude Code by running it as: npx @expertcustom/aurora-mcp\n",
-  );
-}
-
-export function describeCredentialsPath(): string {
-  return credentialsLocation();
+  stdout.write(`Autenticado como ${data.user?.email ?? email}.\n`);
+  if (data.user?.shopId) {
+    stdout.write(`Oficina da sessão: ${data.user.shopId}\n`);
+  } else {
+    stdout.write(
+      "Atenção: este usuário não tem oficina vinculada — consultar_estoque vai falhar sem shopId.\n",
+    );
+  }
+  stdout.write(`Credenciais salvas em ${file} (modo 0600).\n`);
+  stdout.write(`Registre o MCP com: claude mcp add funilaria -- npx -y ${PACKAGE_NAME}\n`);
 }

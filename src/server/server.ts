@@ -4,199 +4,130 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { SERVER_NAME, SERVER_VERSION } from "../config.js";
+import { ENV_VARS, SERVER_NAME, SERVER_VERSION } from "../config.js";
 import {
+  describeCredentials,
   loadCredentials,
   type Credentials,
 } from "../auth/credentials.js";
+import { ApiError, CredentialMissingError } from "../auth/client.js";
+import { ArgumentoInvalidoError, type ToolDefinition } from "./tools/args.js";
+import { PUBLICAR_NOTICIA_TOOL, runPublicarNoticia } from "./tools/publicarNoticia.js";
 import {
-  AuroraApiError,
-  AuthenticationRequiredError,
-} from "../auth/client.js";
-
+  RESPONDER_BUSCA_PECA_TOOL,
+  runResponderBuscaPeca,
+} from "./tools/responderBuscaPeca.js";
+import { LANCAR_CONSUMO_TOOL, runLancarConsumo } from "./tools/lancarConsumo.js";
+import { CONSULTAR_ESTOQUE_TOOL, runConsultarEstoque } from "./tools/consultarEstoque.js";
 import {
-  fetchRemoteTools, callRemoteTool, mergeTools,
-  CATALOG_UNAVAILABLE_TOOL,
-  type RemoteTool,
-} from "./catalog/remoteCatalog.js";
-import { LIST_AIS_TOOL, runListAis } from "./tools/listAis.js";
-import { GET_AI_CONFIG_TOOL, runGetAiConfig } from "./tools/getAiConfig.js";
-import { LIST_CONVERSATIONS_TOOL, runListConversations } from "./tools/listConversations.js";
-import { DELETE_CONVERSATION_TOOL, runDeleteConversation } from "./tools/deleteConversation.js";
-import { LIST_SKILLS_TOOL, runListSkills } from "./tools/listSkills.js";
-import {
-  IMPORT_SKILL_TOOL, runImportSkill,
-  EXPORT_SKILL_TOOL, runExportSkill,
-} from "./tools/manageSkill.js";
-import {
-  LIST_EMBEDDINGS_TOOL, runListEmbeddings,
-} from "./tools/embeddings.js";
-import {
-  GET_SETTINGS_TOOL, runGetSettings,
-  UPDATE_SETTINGS_TOOL, runUpdateSettings,
-} from "./tools/settings.js";
-import {
-  UI_ACTION_STATS_TOOL, runUiActionStats,
-} from "./tools/uiActions.js";
-import {
-  DOWNLOAD_GENERATED_DOC_TOOL, runDownloadGeneratedDoc,
-} from "./tools/generatedDocs.js";
-import { UPLOAD_DOCUMENT_TOOL, runUploadDocument } from "./tools/uploadDocument.js";
-import { UPLOAD_SKILL_FILE_TOOL, runUploadSkillFile } from "./tools/uploadSkillFile.js";
-
-async function requireCredentials(): Promise<Credentials> {
-  const creds = await loadCredentials();
-  if (!creds) throw new AuthenticationRequiredError();
-  return creds;
-}
-
-function errorContent(err: unknown): { content: any[]; isError: true } {
-  let message: string;
-  if (err instanceof AuthenticationRequiredError) {
-    message = err.message;
-  } else if (err instanceof AuroraApiError) {
-    message = `Aurora API error (${err.status}): ${err.message}`;
-  } else if (err instanceof Error) {
-    message = err.message;
-  } else {
-    message = String(err);
-  }
-  return {
-    content: [{ type: "text", text: message }],
-    isError: true,
-  };
-}
-
-function jsonContent(payload: unknown) {
-  return {
-    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-  };
-}
-
-const ALL_TOOLS = [
-  // IAs
-  LIST_AIS_TOOL,
-  GET_AI_CONFIG_TOOL,
-  // Conversations
-  LIST_CONVERSATIONS_TOOL,
-  DELETE_CONVERSATION_TOOL,
-  // Skills
-  LIST_SKILLS_TOOL,
-  IMPORT_SKILL_TOOL,
-  EXPORT_SKILL_TOOL,
-  // Skill Files
-  // Embeddings
-  LIST_EMBEDDINGS_TOOL,
-  // Documents
-  // UI Actions
-  UI_ACTION_STATS_TOOL,
-  // MCP Servers
-  // Providers
-  // Settings
-  GET_SETTINGS_TOOL,
-  UPDATE_SETTINGS_TOOL,
-  // Users
-  // Roles & Permissions
-  // Plans & Subscriptions
-  // Generated Documents
-  DOWNLOAD_GENERATED_DOC_TOOL,
-  // WhatsApp
-  // Error logs & model discovery
-  // Auth & Status
-  // Audit
-  // Webhook Inspector
-  // Tokens
-  // Extra
-  UPLOAD_DOCUMENT_TOOL,
-  UPLOAD_SKILL_FILE_TOOL,
-  // Schedules
-];
+  CONSULTAR_BALANCETE_TOOL,
+  runConsultarBalancete,
+} from "./tools/consultarBalancete.js";
+import { BUSCAR_FORNECEDOR_TOOL, runBuscarFornecedor } from "./tools/buscarFornecedor.js";
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
 
-const HANDLERS: Record<string, ToolHandler> = {
-  [LIST_AIS_TOOL.name]: (c, a) => runListAis(c, a as any),
-  [GET_AI_CONFIG_TOOL.name]: (c, a) => runGetAiConfig(c, a as any),
-  [LIST_CONVERSATIONS_TOOL.name]: runListConversations,
-  [DELETE_CONVERSATION_TOOL.name]: runDeleteConversation,
-  [LIST_SKILLS_TOOL.name]: runListSkills,
-  [IMPORT_SKILL_TOOL.name]: runImportSkill,
-  [EXPORT_SKILL_TOOL.name]: runExportSkill,
-  [LIST_EMBEDDINGS_TOOL.name]: runListEmbeddings,
-  [UI_ACTION_STATS_TOOL.name]: runUiActionStats,
-  [GET_SETTINGS_TOOL.name]: runGetSettings,
-  [UPDATE_SETTINGS_TOOL.name]: runUpdateSettings,
-  [DOWNLOAD_GENERATED_DOC_TOOL.name]: runDownloadGeneratedDoc,
-  [UPLOAD_DOCUMENT_TOOL.name]: runUploadDocument,
-  [UPLOAD_SKILL_FILE_TOOL.name]: runUploadSkillFile,
-};
+interface ToolRegistration {
+  definition: ToolDefinition;
+  handler: ToolHandler;
+}
+
+/**
+ * Registro único: a lista publicada em `tools/list` e o despacho de
+ * `tools/call` saem daqui, então não existe o bug de anunciar uma tool que
+ * ninguém implementa (ou o contrário).
+ */
+const TOOLS: ToolRegistration[] = [
+  { definition: PUBLICAR_NOTICIA_TOOL, handler: runPublicarNoticia },
+  { definition: RESPONDER_BUSCA_PECA_TOOL, handler: runResponderBuscaPeca },
+  { definition: LANCAR_CONSUMO_TOOL, handler: runLancarConsumo },
+  { definition: CONSULTAR_ESTOQUE_TOOL, handler: runConsultarEstoque },
+  { definition: CONSULTAR_BALANCETE_TOOL, handler: runConsultarBalancete },
+  { definition: BUSCAR_FORNECEDOR_TOOL, handler: runBuscarFornecedor },
+];
+
+const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));
+
+/**
+ * Formato de `CallToolResult` do SDK. A assinatura de índice está aqui porque
+ * o tipo do SDK aceita campos extras (`_meta`, `task`); sem ela o handler não
+ * casa com o schema.
+ */
+interface ToolResult {
+  content: { type: "text"; text: string }[];
+  isError?: true;
+  [chave: string]: unknown;
+}
+
+function jsonContent(payload: unknown): ToolResult {
+  return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+}
+
+/**
+ * O que chega na IA é a frase, não a exceção: stack trace não diz o que fazer
+ * a seguir, e é a IA que decide se corrige o payload, avisa o humano ou desiste.
+ */
+function errorContent(err: unknown): ToolResult {
+  let texto: string;
+  if (
+    err instanceof ArgumentoInvalidoError ||
+    err instanceof CredentialMissingError ||
+    err instanceof ApiError
+  ) {
+    texto = err.message;
+  } else if (err instanceof Error) {
+    texto = `Falha inesperada no funilaria-mcp: ${err.message}`;
+  } else {
+    texto = `Falha inesperada no funilaria-mcp: ${String(err)}`;
+  }
+  return { content: [{ type: "text", text: texto }], isError: true };
+}
+
+/**
+ * stdout é o canal do protocolo MCP — qualquer byte solto ali quebra a sessão.
+ * Diagnóstico vai por stderr, que é o que o runtime do Aurora recolhe no log
+ * do servidor.
+ */
+async function logConfiguracao(): Promise<void> {
+  const resumo = describeCredentials(await loadCredentials());
+  process.stderr.write(`[${SERVER_NAME}] ${resumo.linhas.join(" · ")}\n`);
+  if (!resumo.temServico) {
+    process.stderr.write(
+      `[${SERVER_NAME}] Sem credencial de serviço: as tools de escrita vão recusar toda chamada. ` +
+        `Defina ${ENV_VARS.serviceSecret[0]} no ambiente deste processo.\n`,
+    );
+  }
+}
 
 export async function startServer(): Promise<void> {
+  // Antes de conectar: se a env estiver com o nome errado, o operador vê no
+  // primeiro segundo, e não no primeiro 401 de madrugada.
+  await logConfiguracao();
+
   const server = new Server(
     { name: SERVER_NAME, version: SERVER_VERSION },
     { capabilities: { tools: {} } },
   );
 
-  // Catálogo carregado uma vez por sessão e COMPARTILHADO entre tools/list e
-  // tools/call. Guardar a promessa (em vez do resultado) resolve a corrida: um
-  // call que chegue junto do list espera a mesma busca terminar, em vez de
-  // concluir que a tool não existe.
-  let catalogo: Promise<{ ok: boolean; tools: RemoteTool[] }> | null = null;
-
-  async function carregarCatalogo(): Promise<{ ok: boolean; tools: RemoteTool[] }> {
-    if (!catalogo) {
-      catalogo = (async () => {
-        try {
-          const creds = await requireCredentials();
-          return await fetchRemoteTools(creds);
-        } catch {
-          // Sem credencial ainda: não memoriza, para tentar de novo depois do
-          // login. Não é falha do catálogo — nada de sentinela.
-          catalogo = null;
-          return { ok: true, tools: [] };
-        }
-      })();
-    }
-    return catalogo;
-  }
-
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const { ok, tools: remotas } = await carregarCatalogo();
-    const merged = mergeTools(ALL_TOOLS, remotas);
-    return { tools: ok ? merged.tools : [...merged.tools, CATALOG_UNAVAILABLE_TOOL] };
-  });
+  server.setRequestHandler(ListToolsRequestSchema, () => ({
+    tools: TOOLS.map((t) => t.definition),
+  }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-
-    if (name === CATALOG_UNAVAILABLE_TOOL.name) {
-      return jsonContent({ error: CATALOG_UNAVAILABLE_TOOL.description });
-    }
-
-    // Tool servida pelo catálogo: executa pelo nome, o backend resolve a rota.
-    // Consulta o catálogo (esperando a carga em andamento, se houver) antes de
-    // cair no "unknown tool".
-    const { tools: remotas } = await carregarCatalogo();
-    if (remotas.some((t) => t.name === name)) {
-      try {
-        const creds = await requireCredentials();
-        return jsonContent(await callRemoteTool(creds, name, args));
-      } catch (err) {
-        return errorContent(err);
-      }
-    }
-
-    const handler = HANDLERS[name];
-    if (!handler) {
-      return {
-        content: [{ type: "text", text: `Unknown tool: ${name}` }],
-        isError: true,
-      };
+    const tool = POR_NOME.get(name);
+    if (!tool) {
+      return errorContent(
+        new Error(
+          `Tool desconhecida: ${name}. Disponíveis: ${[...POR_NOME.keys()].join(", ")}.`,
+        ),
+      );
     }
     try {
-      const creds = await requireCredentials();
-      const result = await handler(creds, args);
-      return jsonContent(result);
+      // A credencial é lida a cada chamada: quem rodar `login` com o servidor no
+      // ar passa a valer na próxima tool, sem reiniciar o cliente MCP.
+      const creds = await loadCredentials();
+      return jsonContent(await tool.handler(creds, args));
     } catch (err) {
       return errorContent(err);
     }

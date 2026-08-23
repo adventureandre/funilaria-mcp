@@ -1,149 +1,120 @@
-# @expertcustom/aurora-mcp
+# @expertcustom/funilaria-mcp
 
-Servidor MCP (Model Context Protocol) que conecta Claude Code — e qualquer outro cliente MCP — às IAs do Aurora. Permite listar, inspecionar e conversar com as IAs configuradas no seu workspace Aurora diretamente do seu editor.
+Servidor MCP (Model Context Protocol) com as tools tipadas que a IA do Aurora usa para escrever e ler no portal **Funilaria & Pintura**.
 
-## Como funciona
+Ele substitui o `mcp-fetch` montando requisição HTTP à mão com o segredo escrito no system prompt: aqui cada operação é uma tool com schema, descrição e erro em português.
 
 ```
-Claude Code  ──stdio──>  npx @expertcustom/aurora-mcp  ──HTTPS+JWT──>  Aurora backend
+IA do Aurora ──stdio──> npx @expertcustom/funilaria-mcp ──HTTPS──> backend NestJS
 ```
 
-As credenciais do provider (OpenAI/Claude/Gemini) ficam no backend, vinculadas a cada IA. O MCP nunca enxerga essas chaves — ele só repassa sua identidade Aurora (JWT) e o backend faz a chamada com a credencial da IA.
+Pela ADR-001, este pacote é **adaptador**: nenhuma regra de negócio mora aqui. Toda tool chama um endpoint que já existe, e o serviço do backend continua sendo o dono da decisão.
 
-## Pré-requisitos
+## Tools
 
-- Node.js ≥ 20
-- Conta no Aurora com permissão `ia:read`
-- URL do backend Aurora (ex: `https://ia.api.expertcustom.com.br`)
+| Tool | Endpoint | Autenticação | O que faz |
+|---|---|---|---|
+| `publicar_noticia` | `POST /noticias/ingestao` | serviço | Entrega uma matéria ao CMS **como rascunho**. Publicar continua sendo ato humano. |
+| `responder_busca_peca` | `POST /buscas/webhook/resposta-fornecedor` | serviço | Registra a resposta crua do fornecedor no WhatsApp; o backend extrai preço, prazo e condição. |
+| `lancar_consumo` | `POST /estoque/webhook/whatsapp` | serviço | Lança consumo de material a partir da mensagem do funcionário. Devolve em `respostaParaOFuncionario` o texto a mandar de volta. |
+| `consultar_estoque` | `GET /estoque` | serviço + `shopId` | Saldo dos materiais da oficina, com destaque para o que está abaixo do mínimo. |
+| `consultar_balancete` | `GET /estoque/balancete` | serviço + `shopId` | Consumo, entrada, perda e custo do período, por material e por funcionário. |
+| `buscar_fornecedor` | `GET /fornecedores` | pública | Diretório de fornecedores com filtros de nome, tipo, categoria e localidade. |
+
+## Autenticação
+
+**Credencial de serviço com `shopId` explícito** é o caminho principal, tanto para escrever quanto para ler. Header `x-aurora-secret`, o mesmo valor de `AURORA_WEBHOOK_SECRET` no backend; ele não representa pessoa nenhuma, representa o serviço.
+
+Uma IA que atende várias oficinas não tem sessão, então a oficina é **parâmetro**, nunca contexto implícito. Do lado do backend isso é o `@AllowService()` nas rotas de leitura de estoque: o `JwtAuthGuard` aceita o segredo no lugar do JWT e o `ShopContextGuard` passa a exigir o `shopId` — id inexistente responde `404 Oficina não encontrada`, e não uma lista vazia que se confundiria com "oficina sem estoque".
+
+**Sessão de usuário** (JWT de `POST /auth/entrar`) continua suportada para desenvolvimento local: sem `shopId`, a oficina vem da sessão. O access token dura ~15 min, então o cliente renova sozinho pelo refresh token e regrava o par rotacionado. Passar `shopId` nesse modo é recusado na hora, com explicação — a rota devolveria a oficina da sessão como se fosse a pedida.
+
+### Configuração — env é o caminho principal
+
+Em produção quem sobe este processo é o runtime do Aurora, que injeta as variáveis: **não há terminal, e nenhum comando de login é executado**. O servidor funciona com o disco totalmente vazio.
+
+| Env | Apelido aceito | Para quê |
+|---|---|---|
+| `FUNILARIA_API_URL` | `PUBLIC_API_URL` | Base da API |
+| `FUNILARIA_SERVICE_SECRET` | `AURORA_WEBHOOK_SECRET` | Segredo de serviço (`x-aurora-secret`) |
+| `FUNILARIA_SIGNING_SECRET` | `AURORA_WEBHOOK_SIGNING_SECRET` | Segredo da assinatura HMAC (opcional) |
+| `FUNILARIA_SHOP_ID` | — | Oficina padrão de `consultar_estoque` |
+| `FUNILARIA_TOKEN` | — | JWT de usuário, se houver (opcional) |
+
+Os apelidos existem para o erro clássico de copiar o `.env` do backend e o segredo "sumir" por causa do prefixo diferente — `AURORA_WEBHOOK_SECRET` é exatamente o mesmo valor dos dois lados.
+
+Segredo nunca é hardcoded nem lido de prompt. O arquivo `~/.config/funilaria-mcp/credentials.json` (modo `0600`) é conveniência de **desenvolvimento local**; a env sempre vence e nunca é gravada em disco.
+
+No boot, o servidor escreve em **stderr** (stdout é do protocolo MCP) uma linha dizendo o que está configurado e **de qual env veio cada coisa** — nunca o valor. É o que aparece no log do Aurora quando alguém erra o nome da variável:
+
+```
+[funilaria-mcp] API: https://api.exemplo.com (FUNILARIA_API_URL) · Credencial de serviço: configurada via AURORA_WEBHOOK_SECRET · ...
+[funilaria-mcp] Sem credencial de serviço: as tools de escrita vão recusar toda chamada. Defina FUNILARIA_SERVICE_SECRET no ambiente deste processo.
+```
+
+### Assinatura HMAC
+
+Quando `FUNILARIA_SIGNING_SECRET` existe, toda escrita leva também:
+
+```
+x-timestamp: <epoch em segundos>
+x-signature: sha256=<HMAC-SHA256(`${timestamp}.${corpo}`)>
+```
+
+É a melhoria mapeada na ADR-001 (fecha replay e vazamento por log). O backend **ainda não verifica** — header desconhecido é ignorado, então dá para ligar o lado do servidor sem quebrar quem já está rodando.
 
 ## Instalação
 
-### 1) Login no Aurora
+### Na IA do Aurora (produção)
 
-Uma vez por máquina:
-
-```bash
-npx @expertcustom/aurora-mcp login
-```
-
-O comando pergunta:
-
-- **Aurora URL** — endpoint do backend (ex: `https://ia.api.expertcustom.com.br`)
-- **Email** — seu email cadastrado no Aurora
-- **Senha** — sua senha
-
-O JWT fica salvo em `~/.config/aurora-mcp/credentials.json` (modo `0600`). Pra trocar de conta ou refazer o login, é só rodar de novo.
-
-### 2) Registrar no Claude Code
-
-Forma mais simples:
-
-```bash
-claude mcp add aurora -- npx -y @expertcustom/aurora-mcp
-```
-
-Ou edite manualmente o `~/.claude.json`, seção `mcpServers`:
+Registre o servidor com as variáveis no próprio cadastro do MCP — nada de login, nada de segredo no system prompt:
 
 ```json
 {
-  "mcpServers": {
-    "aurora": {
-      "command": "npx",
-      "args": ["-y", "@expertcustom/aurora-mcp"]
-    }
+  "command": "npx",
+  "args": ["-y", "@expertcustom/funilaria-mcp"],
+  "env": {
+    "FUNILARIA_API_URL": "https://<api-do-portal>",
+    "FUNILARIA_SERVICE_SECRET": "<mesmo valor de AURORA_WEBHOOK_SECRET>"
   }
 }
 ```
 
-### 3) Verificar
-
-Dentro do Claude Code, rode `/mcp` — deve aparecer `aurora` como **connected**.
-
-## Tools disponíveis
-
-A lista é **dinâmica**: no primeiro `tools/list` da sessão o cliente busca o
-catálogo em `GET /dashboard/mcp-catalog` do seu Aurora e registra o que vier de
-lá, junto das 14 tools que ainda vivem neste pacote (uploads, downloads e as
-que combinam mais de uma chamada ou transformam a resposta). Tool nova no backend aparece sem atualizar o
-pacote; em caso de nome repetido, a versão do catálogo vence.
-
-> **A partir da 0.7.0 o backend precisa expor o catálogo.** As tools que antes
-> vinham embutidas foram movidas para lá — apontado para um Aurora anterior a
-> essa mudança, o cliente mostra só as 23 locais e uma tool
-> `aurora_catalog_unavailable` explicando o que fazer. Para seguir com o
-> conjunto antigo embutido, fixe `@expertcustom/aurora-mcp@0.6.x`.
-
-Os grupos abaixo refletem as tools locais desta versão.
-
-| Categoria | Tools |
-|-----------|-------|
-| **IAs** | `list_ais`, `get_ai_config` |
-| **Conversas** | `list_conversations`, `delete_conversation` |
-| **Skills** | `list_skills`, `import_skill`, `export_skill` |
-| **Skill Files** | `upload_skill_file` |
-| **Embeddings** | `list_embeddings` |
-| **Documents** | `upload_document` |
-| **UI Actions** | `ui_action_stats` |
-| **Documentos gerados** | `download_generated_doc` |
-| **Settings** | `get_settings`, `update_settings` |
-
-Todas as tools operam via API REST do Aurora. Credenciais de provider **nunca** são expostas.
-
-## Outros clientes MCP
-
-Cursor, Continue, Cline e qualquer outro cliente MCP usam o mesmo formato — basta apontar o `command` para `npx` e os `args` para `["-y", "@expertcustom/aurora-mcp"]`.
-
-## Trocar de ambiente / fazer logout
-
-Refaça o login apontando para outra URL:
+### Local, para desenvolver
 
 ```bash
-npx @expertcustom/aurora-mcp login
+# opção A — env no shell (igual à produção)
+FUNILARIA_API_URL=http://localhost:3334 FUNILARIA_SERVICE_SECRET=... npx @expertcustom/funilaria-mcp
+
+# opção B — guardar em ~/.config para não exportar em todo shell
+npx @expertcustom/funilaria-mcp login-servico
+
+# sessão de usuário: só é necessária para consultar_estoque sem shopId
+npx @expertcustom/funilaria-mcp login
+
+# conferir o que está valendo e de onde veio (nunca imprime segredo)
+npx @expertcustom/funilaria-mcp status
+
+# registrar no Claude Code
+claude mcp add funilaria --env FUNILARIA_API_URL=http://localhost:3334 -- npx -y @expertcustom/funilaria-mcp
 ```
 
-Pra remover as credenciais:
+## Pendências no backend
+
+As quatro pendências originais (webhook de estoque inalcançável, leitura sem credencial de serviço, segredo checado depois da validação, distância como código morto) foram **corrigidas no backend** e revalidadas contra `localhost:3334`. O que sobrou:
+
+1. **A IA não tem como descobrir o `shopId`.** É o único dado que ela precisa saber de cor, e hoje só chega por `FUNILARIA_SHOP_ID` — o que amarra um servidor a uma oficina e derruba o caso multi-oficina que motivou o desenho de serviço.
+
+   O ponto mais barato de resolver é o `lancar_consumo`: o backend **já identificou** funcionário e oficina pelo número do WhatsApp, mas devolve só o texto de confirmação. Se `IntakeResult` incluísse `shopId` e `memberId`, a conversa fluiria — "usei 100ml de verniz" → "quanto gastei esse mês?" seria `consultar_balancete` com os dois ids em mãos. Sem isso, a segunda pergunta não tem resposta possível.
+
+2. **`GET /estoque/movimentos` ficou fora do `@AllowService()`.** O `shopId` está declarado no `ListMovementsDto`, mas a rota não aceita credencial de serviço — o parâmetro não tem como ser usado. Ou marca a rota, ou tira o campo do DTO para não sugerir capacidade que não existe.
+
+3. **Assinatura HMAC ainda não é verificada.** O cliente já envia `x-timestamp` e `x-signature` quando há segredo de assinatura (ver acima). Falta o lado do servidor para fechar replay e vazamento por log, como prevê a ADR-001.
+
+## Desenvolvimento
 
 ```bash
-rm ~/.config/aurora-mcp/credentials.json
+npm install
+npm run build     # tsc estrito, gera dist/
+npm start         # sobe o servidor MCP em stdio
 ```
-
-## Exemplos: Agendar Tarefas com a IA
-
-A tool `schedules` permite que a IA crie, liste e gerencie tarefas agendadas. Exemplo de conversa:
-
-```
-Usuário: "Agende uma tarefa para gerar o boletim todo dia às 8h"
-
-Claude (usando schedules tool):
-  create_schedule({
-    aiId: "aurora-123",
-    title: "Gerar boletim diário",
-    instruction: "Gere o boletim com dados de hoje",
-    deliveryType: "email",
-    target: "diretor@empresa.com.br",
-    preset: { kind: "daily", hour: 8, minute: 0 }
-  })
-
-Resultado: Tarefa criada e agendada ✓
-```
-
-Tipos de entrega:
-- **`email`** — envia resultado por email (requer `target` com email válido)
-- **`whatsapp`** — envia no WhatsApp (requer `target` com número/chatId e IA com provider ativo)
-- **`internal`** — resultado fica no histórico da conversa (sem `target`)
-
-Presets de recorrência:
-- `{ kind: "daily", hour: 8, minute: 30 }` — todo dia às 8:30
-- `{ kind: "weekly", weekday: 3, hour: 14, minute: 0 }` — quarta-feira às 14:00
-- `{ kind: "monthly", day: 1, hour: 9, minute: 0 }` — 1º de cada mês às 9:00
-- `{ kind: "hourly", everyHours: 3, minute: 15 }` — a cada 3 horas na marca :15
-
-Mais exemplos no dashboard Aurora → aba "Agendamentos".
-
-## Troubleshooting
-
-- **`No Aurora credentials found`** — rode `npx @expertcustom/aurora-mcp login` primeiro.
-- **`Aurora API error (401)`** — JWT expirou ou inválido. Refaça o login.
-- **`Aurora API error (403)`** — sua role não tem `ia:read`. Fale com um admin.
-- **`Aurora API error (404)` em `chat_with_ai`/`get_ai_config`** — `name` da IA não existe ou não pertence ao seu workspace. Confirme via `list_ais`.
-- **`Aurora API error (409)` em `chat_with_ai`** — a IA está inativa ou sem credencial de provider. Ajuste no dashboard.
