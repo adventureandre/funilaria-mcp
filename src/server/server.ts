@@ -24,6 +24,10 @@ import {
   runConsultarBalancete,
 } from "./tools/consultarBalancete.js";
 import { BUSCAR_FORNECEDOR_TOOL, runBuscarFornecedor } from "./tools/buscarFornecedor.js";
+import {
+  CONSULTAR_PENDENCIAS_TOOL,
+  runConsultarPendencias,
+} from "./tools/consultarPendencias.js";
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
 
@@ -44,6 +48,7 @@ const TOOLS: ToolRegistration[] = [
   { definition: CONSULTAR_ESTOQUE_TOOL, handler: runConsultarEstoque },
   { definition: CONSULTAR_BALANCETE_TOOL, handler: runConsultarBalancete },
   { definition: BUSCAR_FORNECEDOR_TOOL, handler: runBuscarFornecedor },
+  { definition: CONSULTAR_PENDENCIAS_TOOL, handler: runConsultarPendencias },
 ];
 
 const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));

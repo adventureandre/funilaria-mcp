@@ -11,6 +11,7 @@ import { LANCAR_CONSUMO_TOOL, runLancarConsumo } from "./tools/lancarConsumo.js"
 import { CONSULTAR_ESTOQUE_TOOL, runConsultarEstoque } from "./tools/consultarEstoque.js";
 import { CONSULTAR_BALANCETE_TOOL, runConsultarBalancete, } from "./tools/consultarBalancete.js";
 import { BUSCAR_FORNECEDOR_TOOL, runBuscarFornecedor } from "./tools/buscarFornecedor.js";
+import { CONSULTAR_PENDENCIAS_TOOL, runConsultarPendencias, } from "./tools/consultarPendencias.js";
 /**
  * Registro único: a lista publicada em `tools/list` e o despacho de
  * `tools/call` saem daqui, então não existe o bug de anunciar uma tool que
@@ -23,6 +24,7 @@ const TOOLS = [
     { definition: CONSULTAR_ESTOQUE_TOOL, handler: runConsultarEstoque },
     { definition: CONSULTAR_BALANCETE_TOOL, handler: runConsultarBalancete },
     { definition: BUSCAR_FORNECEDOR_TOOL, handler: runBuscarFornecedor },
+    { definition: CONSULTAR_PENDENCIAS_TOOL, handler: runConsultarPendencias },
 ];
 const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));
 function jsonContent(payload) {
