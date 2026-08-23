@@ -13,6 +13,7 @@ import { CONSULTAR_BALANCETE_TOOL, runConsultarBalancete, } from "./tools/consul
 import { BUSCAR_FORNECEDOR_TOOL, runBuscarFornecedor } from "./tools/buscarFornecedor.js";
 import { CONSULTAR_PENDENCIAS_TOOL, runConsultarPendencias, } from "./tools/consultarPendencias.js";
 import { RESPONDER_CONVITE_FORNECEDOR_TOOL, runResponderConviteFornecedor, } from "./tools/responderConviteFornecedor.js";
+import { IDENTIFICAR_FUNCIONARIO_TOOL, runIdentificarFuncionario, } from "./tools/identificarFuncionario.js";
 /**
  * Registro único: a lista publicada em `tools/list` e o despacho de
  * `tools/call` saem daqui, então não existe o bug de anunciar uma tool que
@@ -29,6 +30,10 @@ const TOOLS = [
     {
         definition: RESPONDER_CONVITE_FORNECEDOR_TOOL,
         handler: runResponderConviteFornecedor,
+    },
+    {
+        definition: IDENTIFICAR_FUNCIONARIO_TOOL,
+        handler: runIdentificarFuncionario,
     },
 ];
 const POR_NOME = new Map(TOOLS.map((t) => [t.definition.name, t]));

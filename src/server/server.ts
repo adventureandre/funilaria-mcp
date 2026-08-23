@@ -32,6 +32,10 @@ import {
   RESPONDER_CONVITE_FORNECEDOR_TOOL,
   runResponderConviteFornecedor,
 } from "./tools/responderConviteFornecedor.js";
+import {
+  IDENTIFICAR_FUNCIONARIO_TOOL,
+  runIdentificarFuncionario,
+} from "./tools/identificarFuncionario.js";
 
 type ToolHandler = (creds: Credentials, args: unknown) => Promise<unknown>;
 
@@ -56,6 +60,10 @@ const TOOLS: ToolRegistration[] = [
   {
     definition: RESPONDER_CONVITE_FORNECEDOR_TOOL,
     handler: runResponderConviteFornecedor,
+  },
+  {
+    definition: IDENTIFICAR_FUNCIONARIO_TOOL,
+    handler: runIdentificarFuncionario,
   },
 ];
 
