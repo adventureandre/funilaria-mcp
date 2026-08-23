@@ -27,7 +27,7 @@ export const CONSULTAR_PENDENCIAS_TOOL = {
 export async function runConsultarPendencias(creds, args) {
     const a = objeto(args);
     const whatsapp = textoObrigatorio(a, "whatsapp").replace(/\D/g, "");
-    return apiRequest(creds, "/fornecedores/pendencias", {
+    return apiRequest(creds, "/fornecedores/integracao/pendencias", {
         auth: "servico",
         query: { whatsapp },
     });

@@ -20,7 +20,7 @@ Pela ADR-001, este pacote é **adaptador**: nenhuma regra de negócio mora aqui.
 | `consultar_estoque` | `GET /estoque` | serviço + `shopId` | Saldo dos materiais da oficina, com destaque para o que está abaixo do mínimo. |
 | `consultar_balancete` | `GET /estoque/balancete` | serviço + `shopId` | Consumo, entrada, perda e custo do período, por material e por funcionário. |
 | `buscar_fornecedor` | `GET /fornecedores` | pública | Diretório de fornecedores com filtros de nome, tipo, categoria e localidade. |
-| `consultar_pendencias_fornecedor` | `GET /fornecedores/pendencias` | serviço | O que o portal espera de um fornecedor, pelo WhatsApp dele: consultas de peça e pedidos em aberto. |
+| `consultar_pendencias_fornecedor` | `GET /fornecedores/integracao/pendencias` | serviço | O que o portal espera de um fornecedor, pelo WhatsApp dele: consultas de peça e pedidos em aberto. |
 
 ## Autenticação
 

@@ -56,7 +56,7 @@ export async function runConsultarPendencias(
 ): Promise<PendenciasResponse> {
   const a = objeto(args);
   const whatsapp = textoObrigatorio(a, "whatsapp").replace(/\D/g, "");
-  return apiRequest<PendenciasResponse>(creds, "/fornecedores/pendencias", {
+  return apiRequest<PendenciasResponse>(creds, "/fornecedores/integracao/pendencias", {
     auth: "servico",
     query: { whatsapp },
   });
