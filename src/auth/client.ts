@@ -261,6 +261,11 @@ async function send(
   if (opts.auth === "servico") {
     const segredo = requireServiceSecret(creds);
     headers["x-aurora-secret"] = segredo;
+    // A oficina deste servidor MCP, quando ele foi registrado no escopo de uma
+    // (FUNILARIA_SHOP_ID no env). O backend confia NESTE header e ignora
+    // `shopId` vindo como argumento da tool: o valor sai do processo, não da
+    // conversa, então nenhuma instrução na mensagem alcança outra oficina.
+    if (creds.shopId) headers["x-funilaria-shop"] = creds.shopId;
     if (creds.signingSecret && payload !== undefined) {
       Object.assign(headers, signatureHeaders(creds.signingSecret, payload));
     }
