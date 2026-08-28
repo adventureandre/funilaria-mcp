@@ -46,6 +46,7 @@ export async function loadCredentials() {
         refreshToken: texto(file.refreshToken),
         email: texto(file.email),
         shopId: env(ENV_VARS.shopId) ?? texto(file.shopId),
+        perfil: env(ENV_VARS.perfil) ?? texto(file.perfil),
         savedAt: texto(file.savedAt) ?? new Date().toISOString(),
     };
 }
@@ -70,6 +71,12 @@ export function describeCredentials(creds) {
                 ? `${creds.email ?? "sem e-mail registrado"} (${origem(ENV_VARS.token)})`
                 : "AUSENTE"}`,
             `Oficina padrão: ${creds.shopId ? `${creds.shopId} (${origem(ENV_VARS.shopId)})` : "não definida"}`,
+            // Sem isto, perfil escrito errado no env é indistinguível de perfil não
+            // definido: nos dois casos vem o catálogo inteiro, e a IA de peças
+            // continua com as tools de estoque sem ninguém notar.
+            `Perfil deste servidor: ${creds.perfil
+                ? `${creds.perfil} (${origem(ENV_VARS.perfil)})`
+                : "não definido — catálogo completo"}`,
         ],
     };
 }
