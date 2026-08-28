@@ -45,7 +45,18 @@ Em produção quem sobe este processo é o runtime do Aurora, que injeta as vari
 | `FUNILARIA_SERVICE_SECRET` | `AURORA_WEBHOOK_SECRET` | Segredo de serviço (`x-aurora-secret`) |
 | `FUNILARIA_SIGNING_SECRET` | `AURORA_WEBHOOK_SIGNING_SECRET` | Segredo da assinatura HMAC (opcional) |
 | `FUNILARIA_SHOP_ID` | — | Oficina padrão de `consultar_estoque` |
+| `FUNILARIA_PERFIL` | — | Qual IA do conjunto este servidor atende: `pecas`, `estoque`. Sem definir, o catálogo vem inteiro |
 | `FUNILARIA_TOKEN` | — | JWT de usuário, se houver (opcional) |
+
+O `FUNILARIA_PERFIL` existe porque o Aurora liga **servidor inteiro** a uma IA —
+não há filtro de tool por IA no painel dele. Então o escopo sai do catálogo: o
+backend devolve só as tools daquele perfil, do mesmo jeito que o
+`FUNILARIA_SHOP_ID` já limita a oficina. Assim a IA de peças não recebe
+`lancar_consumo`, e a de estoque não recebe `responder_busca_peca`.
+
+Perfil desconhecido vale como ausente e devolve tudo: atender demais é
+recuperável, atender de menos deixa a IA sem ferramenta e o sintoma aparece
+longe da causa. Por isso o `status` imprime o perfil que ele leu.
 
 Os apelidos existem para o erro clássico de copiar o `.env` do backend e o segredo "sumir" por causa do prefixo diferente — `AURORA_WEBHOOK_SECRET` é exatamente o mesmo valor dos dois lados.
 

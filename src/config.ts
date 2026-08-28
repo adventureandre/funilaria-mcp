@@ -29,6 +29,17 @@ export const ENV_VARS = {
   signingSecret: ["FUNILARIA_SIGNING_SECRET", "AURORA_WEBHOOK_SIGNING_SECRET"],
   token: ["FUNILARIA_TOKEN"],
   shopId: ["FUNILARIA_SHOP_ID"],
+  /**
+   * Qual IA do conjunto este servidor atende — "pecas", "estoque".
+   *
+   * O Aurora liga SERVIDOR inteiro a uma IA: não existe filtro de tool por IA
+   * no painel. Então o escopo vem daqui, do mesmo jeito que o da oficina vem
+   * do `FUNILARIA_SHOP_ID`: o backend devolve só as tools daquele perfil.
+   *
+   * Sem definir, o catálogo vem inteiro — é o que a IA de atendimento precisa,
+   * e é o comportamento de sempre para servidor que já existia.
+   */
+  perfil: ["FUNILARIA_PERFIL"],
 } as const;
 
 export interface EnvOrigin {

@@ -266,6 +266,14 @@ async function send(
     // `shopId` vindo como argumento da tool: o valor sai do processo, não da
     // conversa, então nenhuma instrução na mensagem alcança outra oficina.
     if (creds.shopId) headers["x-funilaria-shop"] = creds.shopId;
+    // Qual IA do conjunto este servidor atende (FUNILARIA_PERFIL no env). O
+    // backend usa isto no catálogo: a IA de peças não recebe as tools de
+    // estoque, e vice-versa.
+    //
+    // Sai do processo pelo mesmo motivo do shop: perfil vindo da conversa
+    // seria uma instrução escolhendo as próprias permissões. Servidor sem
+    // perfil recebe o catálogo inteiro, que é o comportamento de sempre.
+    if (creds.perfil) headers["x-funilaria-perfil"] = creds.perfil;
     if (creds.signingSecret && payload !== undefined) {
       Object.assign(headers, signatureHeaders(creds.signingSecret, payload));
     }
